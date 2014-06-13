@@ -158,6 +158,7 @@ Resources
 [Containers RFC draft](https://github.com/containers/container-rfc)
 [Google Embraces Docker](http://www.wired.com/2014/06/eric-brewer-google-docker/)
 [Google CAdvisor](https://github.com/google/cadvisor)
+[Google Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
 
 ### Cell-Level Resource Management
 The computation unit is the *cell*. 
@@ -178,7 +179,7 @@ A good understanding of various layers and components of the Metal Cell is usefu
 Note that each layer could actually be viewed as a collection of layers as well.
 
 ###Infrastructure Level
-The scope of the infrastructure-level software is limited to a node, so the firmware, drivers, kernel, operating system and clustering agents represent the software at this level. 
+The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
 ####???
 Resouce isolation 
@@ -274,19 +275,46 @@ Cluster-level, framework-specific applications (e.g. MR jobs, Storm topologies, 
 
 Standard Service Contract
 ------------------------------------
-The Standard Service Contract ensures that all applications will expose information such as version, state, endpoints in a standard manner that could be implicitly read from outside
+The Standard Service Contract ensures that all applications will expose information such as version, state, endpoints in a standard manner that could be implicitly read from outside.
 
 Performance Tracing
 -----------------------------
 By integrating the standard performance tracing libraries (HTrace, NativeTrace*) applications will get implicit performance tracing 
 
+Workload Type
+---------------------
 
 
 Examples
 -------------
 
 **Edge collection**
-Consider an event collection service with a HTTP API running on NGinx. The edge 
+Consider an event collection service with a HTTP API. The characteristics of such a workload are:
+
+ - stateless
+ - long running
+ - network I/O intensive
+ - cpu intensive 
+
+
+Such a service could for example use existing open source technology such as [nignx](http://wiki.nginx.org/Main) and a series of plugins.
+It could be packed in a container (https://github.com/orchardup/docker-nginx).
+
+Then it could be run on top of [Marathon](https://github.com/mesosphere/marathon).
+The edge layer should do a basic processing of the data and then route it to a designated queue. The queue information could be retrieved from the cluster service discovery (e.g. GET http://config/edge/output-queue or
+through DNS output-queue.edge.config).
+The edge workload manager should be able to negotiate with the resource manager (e.g. Mesos or YARN) about the container resources (e.g. 2 cores, 512MB RAM per process) and about the task placement (e.g. < 5 processes per node and < 50 per rack).  
+
+Based on the ***Standard Service Contract***, the edge service should expose it's status, version, configuration,metrics and allow for start/pause/shutdown operations directly over it's standard API (HTTP, Thrift, etc). 
+e.g.
+
+```
+GET http://edge-container-url:port/status
+{"status":"ok"}
+GET http://edge-container-url:port/config
+{"output-queue":"kafka://kafka-container1,..,kafka-containerN:9099/edge-topic"}
+```
+At the same time, all containers will register themselves as the edge-service in the service discovery system. 
 
 Existing Metal Cells
 ================
