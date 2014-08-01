@@ -406,24 +406,34 @@ Roadmap
 ========
 
 #### Metal Cell 0.9.1 (currently in production, a.k.a. SaasBase - Deployment project)
+
 * Puppet Module Registry
-*  TBD
+* TBD
 
 #### Metal Cell 1.0 (resource isolation, service discovery, orchestration)
+
 **Resource Isolation**
+
 * Docker support 
 * Docker registry
 * Mesos, Marathon, Kubernetes, Kronos along with YARN
+
 **Service discovery and active configuration services**
+
 * Atlas (service discovery) using either etcd or consul 
+
 **Orchestration**
+
 * Bare metal OS bootstrap - OpenStack/Ironic 
 * service level orchestration template
 * Metal Conductor
+
 **Console**
+
 * API 
 * UI
 * CLI
+
 #### Metal Cell 2.0 (XDC realtime workload migration, network flow control)
 
 Related
