@@ -60,6 +60,12 @@ Provisioning and deployment become a matter of consuming a service so time to ma
 
 By relieving development teams from this overhead, more services can be developed and tested instead.
 
+R&D 
+Many times we face a chicken and egg problem when it comes to new services. We need infrastructure to test and we wait to be ready with software in order to order it. 
+Being able to "tap" into existing infrastructure across data centers and public cloud would speed up prototyping.
+
+Lean hardware provisioning 
+
 
 **Cost Efficiency**
 Benefits from economy of scale should allow us to reduce our hardware footprint by 10x and decrease operational overhead substantially.
@@ -99,7 +105,7 @@ From a high-level (technical) perspective Metal Cell is concerns with
 * Abstraction/Layers (Time to Market)
 * Resource Management (Efficiency)
 
-Introduction Resource Isolation
+Introduction: Resource Isolation
 --------------------------------------------
 
 Economy of scale, resource utilization, resource sharing, etc. 
@@ -151,14 +157,14 @@ For most standalone cluster level services, a Docker container should suffice.
 #### Docker Containers
 
 
-Resources
-[cgroups redesign](http://www.linux.com/news/featured-blogs/200-libby-clark/733595-all-about-the-linux-kernel-cgroups-redesign)
-[Linux Plumbers Conference](http://www.linuxplumbersconf.org)
-[LMCTFY presentation](http://www.linuxplumbersconf.org/2013/ocw//system/presentations/1239/original/lmctfy%20(1).pdf)
-[Containers RFC draft](https://github.com/containers/container-rfc)
-[Google Embraces Docker](http://www.wired.com/2014/06/eric-brewer-google-docker/)
-[Google CAdvisor](https://github.com/google/cadvisor)
-[Google Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
+##Resources
+[cgroups redesign](http://www.linux.com/news/featured-blogs/200-libby-clark/733595-all-about-the-linux-kernel-cgroups-redesign)  
+[Linux Plumbers Conference](http://www.linuxplumbersconf.org)  
+[LMCTFY presentation](http://www.linuxplumbersconf.org/2013/ocw//system/presentations/1239/original/lmctfy%20(1).pdf)  
+[Containers RFC draft](https://github.com/containers/container-rfc)  
+[Google Embraces Docker](http://www.wired.com/2014/06/eric-brewer-google-docker/)  
+[Google CAdvisor](https://github.com/google/cadvisor)  
+[Google Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)  
 
 ### Cell-Level Resource Management
 The computation unit is the *cell*. 
@@ -182,7 +188,7 @@ Note that each layer could actually be viewed as a collection of layers as well.
 The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
 ####???
-Resouce isolation 
+Resource isolation 
 The low level 
 
 ###Cluster Level
@@ -193,17 +199,20 @@ The low level
 * Streams: queues
 
 #### Compute
-* Raw: cores, ram Mesos/Yarn,  Marathon,  Aurora
+* Raw: cores, ram, io: Mesos/Yarn,  Marathon,  Aurora
 * Frameworks: Spark, Map-Reduce, Weave
 * Hybrid: Storm
 
 #### Service Configuration and Discovery
-
+Consul, Etcd, Zookeeper
 #### Coordination
-#### Scheduling
-#### Resource Management
+Zookeeper, 	
+#### Resource Management & Scheduling
+Mesos, YARN
 #### Monitoring
+
 #### RPC 
+
 
 
 ###Application Level
@@ -316,6 +325,49 @@ GET http://edge-container-url:port/config
 ```
 At the same time, all containers will register themselves as the edge-service in the service discovery system. 
 
+**Cell Interaction**
+```
+[<clehene@clehene-osx>][~]brew install cell 
+[<clehene@clehene-osx>][~]cell list-resources --all
+LON1-H1 available 48435/80000 cores,  84TB/132TB RAM 
+...
+OAK1-H1 available 48435/80000 cores,  84TB/132TB RAM 
+OAK1-H2 available 48435/80000 cores,  84TB/132TB RAM 
+OAK1-H3 available 48435/80000 cores,  84TB/132TB RAM 
+...
+SIN1-H1 available 7200/7200 cores,  37TB/37TB RAM 
+
+[<clehene@clehene-osx>][~]cell list-tasks --cell=SIN-H3
+
+[<clehene@clehene-osx>][~]git clone https://git.corp.adobe.com/mcloud/moa
+[<clehene@clehene-osx>][~]cd moa/cells
+[<clehene@clehene-osx>][~]cat cell.yaml
+docker-registry: https://gauntlet-registry/
+cell-uid: moa-dev
+cell-key: ~/.cell/id_dsa
+...
+[<clehene@clehene-osx>][~]cat containers/small.yaml
+cores: 2
+ram: 2GB
+[<clehene@clehene-osx>][~]docker search moa
+NAME                  DESCRIPTION               STARS       TRUSTED
+moa-api               CRS HTTP APIs             30          [OK]
+moa-stream-loader  	  CRS Stream Ingestion      47          [OK]
+moa-bulk-loader  	  CRS Stream Ingestion      12          [OK]
+
+[<clehene@clehene-osx>][~]cell deploy --type=docker moa-stream-loader --containers=400 --cell=SIN1-H1
+Task URL: http://cell/SIN1-H1/task/moa-stream-loader
+Progress 168/400
+Progress 400/400
+
+[<clehene@clehene-osx>][~]cell list-resources --cell=SIN1-H1
+SIN1-H1 available 6400/7200 cores,  37TB/37TB RAM 
+
+```
+
+
+
+
 Existing Metal Cells
 ================
 Development Cells:
@@ -353,15 +405,32 @@ DC Conductor - Datacenter Orchestration
 Roadmap
 ========
 
-#### Metal Cell 0.9 (currently in production, a.k.a. SaasBase - Deployment project)
+#### Metal Cell 0.9.1 (currently in production, a.k.a. SaasBase - Deployment project)
+* Puppet Module Registry
+*  TBD
+
 #### Metal Cell 1.0 (resource isolation, service discovery, orchestration)
+**Resource Isolation**
+* Docker support 
+* Docker registry
+* Mesos, Marathon, Kubernetes, Kronos along with YARN
+**Service discovery and active configuration services**
+* Atlas (service discovery) using either etcd or consul 
+**Orchestration**
+* Bare metal OS bootstrap - OpenStack/Ironic 
+* service level orchestration template
+* Metal Conductor
+**Console**
+* API 
+* UI
+* CLI
 #### Metal Cell 2.0 (XDC realtime workload migration, network flow control)
 
 Related
 ======
-OpenStack
-VPC
-Popcorn
+* OpenStack
+* VPC
+* Popcorn
 
 
 History
