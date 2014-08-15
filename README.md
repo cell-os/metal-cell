@@ -167,31 +167,77 @@ For most standalone cluster level services, a Docker container should suffice.
 [Google Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)  
 
 ### Cell-Level Resource Management
-The computation unit is the *cell*. 
+With proper node level resource isolation in hand we can look at the cluster-level view of resources.
+Just like we can keep track of the available resource on a single OS a similar approach is needed at a cluster level. Resource management involves tracking of free and used resources and potentially the scheduling for the workloads. 
+
+As a container spans a single node, the maximum capacity for a container will be limited to the maximum free capacity on a node. Hence resource managers need to keep track of what resources are available where and be able to allocate / de-allocte resources.
+
+Cluster level resource managers such as Mesos and the YARN Resource Manager handle the management of some of the resources along with their physical locations.
+
+As a cell will have multiple nodes communicating over the network through switches we can see how resource management is not limited to nodes and containers, but also the networking equipment. 
+
+Containers deal with node level resource isolation of resources such as CPU, Memory, Disk IO, Network IO memory, disk and network resources are measured in both bandwidth and latency. However as workloads likely span across many containers network will be a shared resource limited by physical hardware external to the node. While one could argue that switches could be containerized as well, that abstraction is limited and unlikely to scale properly. Instead the inter-node connection (bandwidth and latency) would probably be a better abstraction.
+
+Hence cell-level resource managers will need to deal with more than just containers and consider leveraging networking equipment as well when allocating resources for a workload.
+
+Note that even today this is partially approached by existing resource managers and distributed systems through concepts such as node / rack locality. The assumption here is that networking resources will be richer at a node level than at rack level and rack level connectivity is richer than across racks, etc. This is mostly true for classical networks that assume good N-S bandwidth and less good E-W bandwidth due to the fact that nodes in two racks may need to communicate to a higher level switch that is shared across many switches, hence with limited bandwidth.
+
+Metal Cell network architecture will involve E-W network links so racks could talk directly to each other, hence improving the E-W traffic. 
+
+With this in mind a stronger abstraction to measure network communication bandwidth and latency will likely be needed.
+
 
 ### Global-Level Resource Management
+A cell is by designed constrained to a single physical location (datacenter).
+A cell is also an availability zone so we can think in terms of cell availability.
 
+To increase availability a workload could target multiple cells, potentially across geographical locations.
+While the stateless or semi-stateless (think in-memory content) workloads are relatively easily relocatable, for persistent state (e.g. in HDFS) replication needs to be considered. 
+
+There are data consistency aspects involved, however we'll rather focus on the resource management aspect.
+
+Just as the cell resource management needs to deal with shared network resources, communication between cells needs to tackle the problem in a similar fashion. 
+
+Fundamentally there's no difference between intra-cell and cross-cell resource management. The only difference is in the capacity. Hence a global view of the resources is not only possible, but highly probable.
+
+This will make the Metal Cell "brain" omnipresent. 
 
 ### Fine-grained ultra-granular application-level resource isolation
-Lightweight threads Fibers/coroutines  TBD
-
-
+In the opposite extreme of the global view is the micro-level view of a computation.
+Lightweight threads Fibers/coroutines 
 
 Layers
 ---------
+A good understanding of various layers* and components of the Metal Cell is useful in order to understand  development practices.
 
-A good understanding of various layers and components of the Metal Cell is useful in order to understand  development practices.
+###Infrastructure Level / Node Level
 
-Note that each layer could actually be viewed as a collection of layers as well.
+![Node](http://goo.gl/VU8rfH)  
 
-###Infrastructure Level
 The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
 ####???
 Resource isolation 
 The low level 
 
+
+
+
+
 ###Cluster Level
+
+![Cell](http://goo.gl/gjbHZj)
+
+
+####What makes a service a cluster-level core service vs an application-level software?
+Cluster-level services are managed services that are meant to be shared across workloads that run alongside.
+The ability to share a service across several workloads implies at least a basic level of resource management within the service (think about security,  quotas and QoS).  
+
+Examples:
+
+* Hadoop Map-Reduce is such a service for example.
+* Apache Kafka not so much (although it may become one).
+
 
 #### Storage
 * Unstructured (block) - file system
@@ -217,6 +263,8 @@ Mesos, YARN
 
 ###Application Level
 Application level software is generally meant to provide functionality for our end-users. Most client-facing software is in this category.
+
+*Note that each layer could actually be viewed as a collection of layers as well.
 
 Datacenter Geography: Data Locality
 ---------------------------------------------------
@@ -248,8 +296,130 @@ Managing State
 ----------------------
 
 
+Implementation
+=============
+
+Given the speed at which open-source evolves, relying on proprietary technology (in-house or 3rd party) is risky.
+For this reason Metal Cell's goal is to leverage open-source technology* as much as possible.
+
+###Infrastructure Level
+
+#### OS
+We're currently targeting CentOS 7 as a base for the Metal Cell
+
+This said, as we're looking at leveraging container technology as well as cluster-level services for most workloads the host OS is likely to need much less than a classical server OS. 
+Also, other features that may not be available in most common distributions or OS-es today may be needed.
+Hence we're exploring alternative distributions such as CoreOS.
+
+Within a cell it should be possible to run multiple OS es however. 
+
+Deploying the OS.
+[OpenStack Ironic](https://github.com/openstack/ironic) may be used to deploy the base OS.
+
+#### Clustering software
+On top of the OS there are the building blocks for the core cluster-level services
+
+Container support:
+[Docker Daemon](https://docs.docker.com/articles/basics/)
+
+Cluster software agents
+[Mesos Slave](http://mesos.apache.org/documentation/latest/mesos-architecture/)
+[YARN Node Manager](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
+
+As many of the cluster level services that we're running are not (yet) containerized and designed to run on a cluster manager,  we'll likely run some outside of containers initially.
+
+###Cluster Level
 
 
+#### Cluster management
+
+**Low level**
+* [Mesos](http://mesos.apache.org/)
+* [YARN](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
+
+Note that Mesos and YARN have similar goals. While YARN comes from the Hadoop world and is backed by the Hadoop community along with companies such as Hortonworks and Cloudera.
+Mesos comes from an academic environment, namely Berkleys' AMPLab which Adobe is also a member of and bears higher similarity with systems present in Google.
+While there's probably more enthusiasm around the Mesos ecosystem (also due to Spark which was initially built as a Mesos demo use-case) the Hadoop ecosystem comes with an enterprise view of things that enables integrated enterprise-grade security and interoperation with existing Hadoop ecosystem services.
+
+**Schedulers**
+Long running 
+* [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
+* [Marathon](https://github.com/mesosphere/marathon),
+* [Aurora](http://aurora.incubator.apache.org/)
+
+Both Marathon and Aurora have similar goals.
+
+Batch Scheduling
+* [Khronos](https://github.com/airbnb/chronos)
+
+#### Data Processing
+Note that is common for some systems to have their own schedulers
+
+Job based
+* [Hadoop Map Reduce]()
+* [Spark](), [Impala], [Presto], [Drill]()
+
+Long running frameworks
+* [Storm]
+* [Spark Streaming]
+* [Samza]
+
+#### Storage
+Unstructured (block) - file system
+* [Hadoop HDFS](http://hadoop.apache.org/docs/r1.2.1/hdfs_design.html)
+Structured storage:
+* [HBase](http://hbase.apache.org/)
+Streams: queues
+* [Kafka](http://kafka.apache.org/) (cluster sharing is limited)
+
+
+#### Distributed Coordination,  Consensus, Synchronization
+* [Zookeeper](http://zookeeper.apache.org/)(service)
+
+Note that while zookeeper itself is a service, distributed coordination can be implemented with embedded libraries (there's a plethora using Raft http://raftconsensus.github.io/) 
+
+#### Distributed Active Configuration and Service Discovery
+* [Consul](http://www.consul.io/)
+* [Etcd](https://github.com/coreos/etcd)
+
+Note that Consul and Etcd are highly overlapping in some aspects.
+Both provide REST APIs, Consul also provides a DNS interface and works across data centers.
+It's likely that we'll test both and choose or potentially use both if that makes sense.
+
+#### Distributed Performance Monitoring, Dynamic Tracing
+* [OpenTSDB](http://opentsdb.net/)
+* [Zipkin](http://twitter.github.io/zipkin/)
+
+#### Distributed RPC 
+TBD - see Standard Service Contract
+* [Thrift](https://thrift.apache.org/)
+* 
+
+### Supporting technologies
+
+
+Containers:
+Docker 
+Kubernetes 
+CAdvisor
+libswarm
+libcontainer
+
+Coordination
+Raft
+RPC
+
+Encoding
+Protocol Buffers
+Avro 
+
+Parquet 
+
+Active Configurations
+Adobe PrefX
+
+
+* both hardware and software
 Developing for the Cell
 ===================
 
@@ -286,12 +456,25 @@ Standard Service Contract
 ------------------------------------
 The Standard Service Contract ensures that all applications will expose information such as version, state, endpoints in a standard manner that could be implicitly read from outside.
 
+In addition these need to clearly, distinctively manage state. Volatile (in-memory) state should losable. Any state that should not be lost should be stored in a cluster level service that could withstand failures.
+
+Services that obey the standard service contract should be easily scalable in a automated fashion and will offer a high degree of resilience. These services could be implicitly monitored without explicit operations and their sanity could be implicitly evaluated as well. 
+
 Performance Tracing
 -----------------------------
 By integrating the standard performance tracing libraries (HTrace, NativeTrace*) applications will get implicit performance tracing 
 
-Workload Type
----------------------
+Workload Types
+----------------------
+
+There are many dimensions a workload could be characterized from. Probably more than we would afford to expose here.
+
+**Duration**
+Long running
+On-time/Recurring
+
+**Layer**
+
 
 
 Examples
@@ -406,34 +589,28 @@ Roadmap
 ========
 
 #### Metal Cell 0.9.1 (currently in production, a.k.a. SaasBase - Deployment project)
-
 * Puppet Module Registry
-* TBD
+* Monitoring and Alerting
+*  TBD
 
 #### Metal Cell 1.0 (resource isolation, service discovery, orchestration)
-
 **Resource Isolation**
-
 * Docker support 
 * Docker registry
 * Mesos, Marathon, Kubernetes, Kronos along with YARN
-
 **Service discovery and active configuration services**
-
 * Atlas (service discovery) using either etcd or consul 
-
 **Orchestration**
-
 * Bare metal OS bootstrap - OpenStack/Ironic 
 * service level orchestration template
 * Metal Conductor
-
 **Console**
-
 * API 
 * UI
 * CLI
-
+**Tracing, Monitoring and Alerting**
+*  cAdvisor
+*  HTrace (Java Only) 
 #### Metal Cell 2.0 (XDC realtime workload migration, network flow control)
 
 Related
