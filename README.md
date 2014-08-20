@@ -7,21 +7,19 @@ Web:         httt://metal.corp.adobe.com
 Date:        June 2, 2014  
 Misc:        The current version of this document lives in my stackedit.io - keep that in mind if you want to make any changes  
 
-#Work in progress! Content and structure are subject to change!
+##Work in progress! 
 
 Metal Cell
 ========
-Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attempts to move storage and computing from traditional, monolithic, multiple single-node setups to cluster and cluster-of-clusters using existing Open Source technology. 
+Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attempts to move storage and compute from traditional, monolithic, multi single-node setups to homogenous pools of resources (cells) using existing Open Source technology.
 
 "Exec Bullets"
---------------------------
-
+--------------------  
 * **Cost savings** through consolidated infrastructure and resource sharing that could reduce the hardware footprint by 10x.
 * **Improved time to market** through accelerated development and self service provisioning of both infrastructure (IaaS) and cluster level services (PaaS)
 
 "Dev Bullets"
-------------------
-
+------------------  
 * Any language at any layer between hardware and end-application
 * 
 
@@ -93,23 +91,16 @@ World view
 ----------------
 * Global (the collection of all cells across the globe)
 * Region
-* AZ
-* Cell 
+* Cell
 * Pods
 * Racks
 * Nodes
-
-
-From a high-level (technical) perspective Metal Cell is concerns with 
-
-* Abstraction/Layers (Time to Market)
-* Resource Management (Efficiency)
+* Containers
 
 Introduction: Resource Isolation
 --------------------------------------------
 
-Economy of scale, resource utilization, resource sharing, etc. 
-
+Economy of scale, resource utilization, resource sharing, etc.   
 Overcommitting resources to increase resource utilization.
 
 Imagine you'd have a store where each customer has it's own sales person.
@@ -124,9 +115,16 @@ As you see resource utilization optimization is a common problem. However just a
 
 Introduction: Onion Layers
 --------------------------------------
-You can imagine metal cell as a succession of layers similar to an onion (in 3 categories: infrastructure, custer, app).
-Depending on the layer, orthogonal aspects such as resource isolation, compatibility, may have different concerns. For example at the OS level, the available resources (CPU, Memory, IO) are managed by the Linux Kernel. However, at the cluster level a higher level view that contains multiple running servers has a much bigger view that needs to factor in resources such as network equipment shared between servers (e.g. rack bandwidth and latency).
+You can imagine Metal Cell as layers in an onion. 
 
+Going from a small scale like a OS process to the OS environment and then to the cluster, we may need to worry about similar concerns, such as resource isolation or compatibility, however they'll have different scopes (and potentially solutions) with each level of abstraction (layer)
+
+While at the OS level binary compatibility may be a concernt, generally at a cluster level it could be the service (RPC) compatibility that we'd be concerned with.
+
+At an *OS level* the Kernel manages the local CPU cores, memory and IO resources.
+At a *cluster level* there's a wider view of the resources which includes both servers and the networking equipment which they share.
+
+* 3 large layer categories: infrastructure, custer, app.
 
 Resource Management and Isolation
 ----------------------------------------------------
@@ -135,27 +133,29 @@ Resource Management and Isolation
 
 Although the resources may vary with each service, there are a few low level basic resources that matter.
 
-At the infrastructure (device)-level, the main resources we're concerned with are CPU, Memory and IO * 
+At the infrastructure (device)-level, the main resources we're concerned with are CPU, memory, IO, disk. Both memory and IO have latency and bandwidth measures that we care**
 
 [footnote: as the server itself has it's own layers, internal subsystems such as network or disk controllers will have their own resource allocation and isolation semantics, however keep in mind that a layer is supposed to abstract wherever possible - think of virtual memoy for example. One could say that given the actual resources such as sillicon chips and energy things could be simplified, while we agree, we need to remain pragmatic]
 
+**footnote:  as a generalization you can imagine just two/three type of resources: those that store and those that process and those that make it possible to transport data from storage to processing.  The measures that we'll mostly care about are capacity, bandwidth and latency. 
 
 #### Resource Isolation and Containers
-To ensure SLAs when overcommitting resources a resource isolation mechanism is required.
-For example the express line in your local store has an item-limit (generally less than 10-15). That's a good example of resource isolation to protect blocking the resource (cashier0 from a customer with 5 carts for example. 
+To ensure QoS when sharing resources an isolation mechanism is required.
+For example, the express line in your local store has an item-limit (generally less than 10-15). That's a good example of resource isolation to protect blocking the resource (cashier0 from a customer with 5 carts for example. 
 
-Similarly operating systems have ways to ensure resource isolation. The Linux Kernel has cgroups[^cgroops-foot].  
-and there are user-space interfaces to access the container features 
+In a similar fashion an OS provides mechanisms aimed to isolate resources.  
+The Linux Kernel has namespaces and cgroups[^cgroops-foot] as building blocks to offer resource isolation.
 
-Layers
-* [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt)
-* [Linux LXC](https://linuxcontainers.org/), [Google LMCTFY](https://github.com/google/lmctfy), [Docker libcontainer](https://github.com/docker/libcontainer)
-* [Docker](https://www.docker.io)
-
-For most standalone cluster level services, a Docker container should suffice.
+* Namespaces and cgroups  
+	* [namespaces](http://lwn.net/Articles/531114/)
+	* [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt)
+	* http://www.haifux.org/lectures/299/netLec7.pdf
+* Containers
+  * [Linux LXC](https://linuxcontainers.org/), [Google LMCTFY](https://github.com/google/lmctfy), [libcontainer](https://github.com/docker/libcontainer)
+  * [Docker](https://www.docker.io)
 
 #### Docker Containers
-
+Docker is a container engine with the goal of aiding application packaging and running in lightweight containers. 
 
 ##Resources
 [cgroups redesign](http://www.linux.com/news/featured-blogs/200-libby-clark/733595-all-about-the-linux-kernel-cgroups-redesign)  
@@ -172,7 +172,7 @@ Just like we can keep track of the available resource on a single OS a similar a
 
 As a container spans a single node, the maximum capacity for a container will be limited to the maximum free capacity on a node. Hence resource managers need to keep track of what resources are available where and be able to allocate / de-allocte resources.
 
-Cluster level resource managers such as Mesos and the YARN Resource Manager handle the management of some of the resources along with their physical locations.
+Cluster level resource managers such as Mesos and the YARN Resource Manager handle the management of some* of the resources along with their physical locations.
 
 As a cell will have multiple nodes communicating over the network through switches we can see how resource management is not limited to nodes and containers, but also the networking equipment. 
 
@@ -206,25 +206,46 @@ This will make the Metal Cell "brain" omnipresent.
 In the opposite extreme of the global view is the micro-level view of a computation.
 Lightweight threads Fibers/coroutines 
 
+Performance Monitoring and Debugging
+---------------------------------------------------------
+
+One of the main concerns in shared environments is related to the potential performance impact and the traceability and attribution of performance issues. 
+This is a fair concern, given that the hardware is shared and and potentially overcommitted. 
+
+Monitoring is intrinsic to Metal Cell, so core services are implicitly monitored.
+
+Containers (through their standard interface) make it possible to implicitly monitor application-level workloads as well as.
+
+* [cAdvisor](https://github.com/google/cadvisor) provides container resource usage and performance characteristics information. 
+
+### Monitoring Infrastructure 
+
+### Distributed Tracing
+In addition a set of distributed dynamic tracing technologies will be available to get realtime deep visibly into fully distributed running systems.   
+
+By integrating performance tracing libraries (HTrace, NativeTrace*) applications could get implicit performance tracing.
+
+
 Layers
 ---------
 A good understanding of various layers* and components of the Metal Cell is useful in order to understand  development practices.
 
-###Infrastructure Level / Node Level
+We follow the terminology used in the "Datacenter as a Computer" paper published by Google that introduced the concept of Warehouse Scale Computers (WSC) that essentially make an entire date center behave as a single entity. The ***cell*** in Metal Cell follows the same model.
+
+
+###Platform-level / Node Level
+
+The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
 ![Node](http://goo.gl/VU8rfH)  
 
-The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
 ####???
 Resource isolation 
 The low level 
 
 
-
-
-
-###Cluster Level
+###Cluster-level
 
 ![Cell](http://goo.gl/gjbHZj)
 
@@ -261,7 +282,7 @@ Mesos, YARN
 
 
 
-###Application Level
+###Application-level
 Application level software is generally meant to provide functionality for our end-users. Most client-facing software is in this category.
 
 *Note that each layer could actually be viewed as a collection of layers as well.
@@ -328,12 +349,11 @@ Cluster software agents
 
 As many of the cluster level services that we're running are not (yet) containerized and designed to run on a cluster manager,  we'll likely run some outside of containers initially.
 
-###Cluster Level
+###Cluster-level Infrastructure Software
 
+#### Resource Management & Scheduling
 
-#### Cluster management
-
-**Low level**
+**Resouce Management**
 * [Mesos](http://mesos.apache.org/)
 * [YARN](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
 
@@ -341,7 +361,7 @@ Note that Mesos and YARN have similar goals. While YARN comes from the Hadoop wo
 Mesos comes from an academic environment, namely Berkleys' AMPLab which Adobe is also a member of and bears higher similarity with systems present in Google.
 While there's probably more enthusiasm around the Mesos ecosystem (also due to Spark which was initially built as a Mesos demo use-case) the Hadoop ecosystem comes with an enterprise view of things that enables integrated enterprise-grade security and interoperation with existing Hadoop ecosystem services.
 
-**Schedulers**
+**Scheduling**
 Long running 
 * [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
 * [Marathon](https://github.com/mesosphere/marathon),
@@ -352,7 +372,7 @@ Both Marathon and Aurora have similar goals.
 Batch Scheduling
 * [Khronos](https://github.com/airbnb/chronos)
 
-#### Data Processing
+#### Programming Frameworks
 Note that is common for some systems to have their own schedulers
 
 Job based
@@ -418,6 +438,23 @@ Parquet
 Active Configurations
 Adobe PrefX
 
+Tech choices
+-----------------
+
+While the concepts employed in the Metal Cell are fairly stable, many of the technologies and patterns used are new and evolving.
+While Big Data used to be super computing years ago and then became synonym with Hadoop the current ecosystem is much more diversified and there's no reason to believe it won't become even more diversified.
+
+While we used to be looking at the Hadoop as a single system, the Hadoop ecosystem now contains a large set of technologies (we call these HSTACK). Hadoop has got enterprise notoriety through a consolidated community effort, however, just like linux it evolved organically and heterogeneously. Suffice to say that in terms of the code base there's a lot of legacy. 
+
+In the meantime new systems have evolved from the open-source and academic communities. One of them is Mesos which is a product of Berkley's AMPLab (along with Spark, MLib, Tachyon,  etc.) 
+
+CoreOS has built a new "cloud-optimized" OS based on Chromium OS along with new technologies that enable distributed services such as Etcd, Fleet, etc. 
+
+Vagrant has been quietly working on Serf and Consul.
+
+More recently Google has intensified it's involvement in the open-source space and started contributing as well, so we see Kubernetes - a container cluster scheduler along with cAdvisor and others. 
+
+While we think the overall Metal Cell architecture won't change significantly we should be open to changing technology stacks. 
 
 * both hardware and software
 Developing for the Cell
