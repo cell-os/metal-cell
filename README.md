@@ -237,7 +237,7 @@ We follow the terminology used in the "Datacenter as a Computer" paper published
 
 The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
 
-![Node](http://goo.gl/VU8rfH)  
+![Node](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/meta-cell-node-150.png)
 
 
 ####???
@@ -247,7 +247,7 @@ The low level
 
 ###Cluster-level
 
-![Cell](http://goo.gl/gjbHZj)
+![Cell](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/metal-cell-cluster-150.png)
 
 
 ####What makes a service a cluster-level core service vs an application-level software?
@@ -457,10 +457,9 @@ More recently Google has intensified it's involvement in the open-source space a
 While we think the overall Metal Cell architecture won't change significantly we should be open to changing technology stacks. 
 
 * both hardware and software
+
 Developing for the Cell
 ===================
-
-Writing application for 
 
 Any software can run on the Metal Cell, including legacy software.
 This being said, software that targets Metal Cell will be faster to write in a highly available, performant manner.
@@ -648,6 +647,7 @@ Roadmap
 **Tracing, Monitoring and Alerting**
 *  cAdvisor
 *  HTrace (Java Only) 
+
 #### Metal Cell 2.0 (XDC realtime workload migration, network flow control)
 
 Related
