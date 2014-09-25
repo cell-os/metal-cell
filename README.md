@@ -1,11 +1,12 @@
-Title:       Metal Cell  
+Title:         Metal Cell  
 Subtitle:    Adobe's Mechanically Sympathetic Datacenter as a Computer
 Project:     Metal Cell  
 Author:      Cosmin Lehene  
 Affiliation: Adobe  
-Web:         httt://metal.corp.adobe.com  
-Date:        June 2, 2014  
-Misc:        The current version of this document lives in my stackedit.io - keep that in mind if you want to make any changes  
+Web:          httt://metal.corp.adobe.com  
+Date:         June 2, 2014  
+Updated:   Sept 15, 2014
+Misc:         The current version of this document lives in my stackedit.io - keep that in mind if you want to make any changes  
 
 ##Work in progress! 
 
@@ -21,7 +22,14 @@ Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attem
 "Dev Bullets"
 ------------------  
 * Any language at any layer between hardware and end-application
-* 
+
+
+Community
+==========
+Developer mailing list: DL-metal-cell-dev@adobe.com (alias metal-cell@adobe.com)  
+Users mailing list: DL-metal-cell-users@adobe.com  
+Github Org: https://git.corp.adobe.com/metal-cell/  
+Docs: https://git.corp.adobe.com/pages/metal-cell/metal-cell/  
 
 Abstract
 -----------
@@ -225,6 +233,19 @@ In addition a set of distributed dynamic tracing technologies will be available 
 
 By integrating performance tracing libraries (HTrace, NativeTrace*) applications could get implicit performance tracing.
 
+Security
+-----------
+
+
+Resources:
+Docker:
+http://www.projectatomic.io/blog/2014/09/yet-another-reason-containers-don-t-contain-kernel-keyrings/
+Hadoop:
+http://hadoop.apache.org/docs/r2.3.0/hadoop-project-dist/hadoop-common/SecureMode.html
+Mesos:
+http://mesos.apache.org/blog/framework-authentication-in-apache-mesos-0-15-0/
+Knox:
+http://knox.apache.org/
 
 Layers
 ---------
@@ -604,6 +625,13 @@ Developing the Cell
 Metal Cell is part of [Adobe Open Development Initiative](https://wiki.corp.adobe.com/display/opendev/Home), hence developed in an Adobe internal open-source manner. 
 This being said, Metal Cell si more about integrating existing open-source projects and having them available as readily available services in our data centers. 
 
+##Contact
+Git: https://git.corp.adobe.com/metal-cell/metal-cell  
+Users: DL-metal-cell-users <metal-cell-users@adobe.com>  
+Developers: DL-MetaSky-Client-Dev <MetaSky-Client-Dev@adobe.com> (alias metal-cell@adobe.com)  
+JIRA: 
+Hipchat: https://adobemc.hipchat.com/rooms/show/618702/metalcell  
+
 There are several aspects of Metal Cell development:
 
 HStack - Upstream OSS Projects Integration
@@ -632,7 +660,7 @@ Roadmap
 #### Metal Cell 1.0 (resource isolation, service discovery, orchestration)
 **Resource Isolation**
 * Docker support 
-* Docker registry
+* Docker registry + HDFS support
 * Mesos, Marathon, Kubernetes, Kronos along with YARN
 **Service discovery and active configuration services**
 * Atlas (service discovery) using either etcd or consul 
