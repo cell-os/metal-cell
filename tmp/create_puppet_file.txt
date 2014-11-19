@@ -1,0 +1,8 @@
+saasbase-deployment/saasbase_installer -v -d ./saasbase-deployment/ -m metalcell/puppet/ run-puppet metalcell/clusters/UT1-VCELL-1
+
+
+ln -s /root/metalcell/puppet/puppet-etcd /root/metalcell/puppet/etcd
+ln -s /root/metalcell/puppet/puppet-docker /root/metalcell/puppet/docker
+ln -s /root/metalcell/puppet/puppet-marathon /root/metalcell/puppet/marathon
+ln -s /root/metalcell/puppet/puppet-mesos /root/metalcell/puppet/mesos
+
