@@ -15,14 +15,18 @@
     "volumes" : []
   },
   "env": {
-    "ETCD_MACHINES": "http://scvm1231.dev.ut1.omniture.com:4001,http://scvm1232.dev.ut1.omniture.com:4001,http://scvm1235.dev.ut1.omniture.com:4001,http://scvm1240.dev.ut1.omniture.com:4001,http://scvm1241.dev.ut1.omniture.com:4001"
+    "ETCD_MACHINES": "http://scvm1231.dev.ut1.omniture.com:4001,http://scvm1232.dev.ut1.omniture.com:4001,http://scvm1235.dev.ut1.omniture.com:4001", 
+    "SKYDNS_NAMESERVERS": "10.27.56.31:53,10.27.56.32:53", 
+    "SKYDNS_ADDR": "0.0.0.0:53",
+    "SKYDNS_DOMAIN": "cell.local."
   },
   "id": "/skydns",
   "instances": "1",
   "cpus": "1",
-  "constraints": [["hostname", "UNIQUE"]],
+  "constraints": [
+    ["hostname", "LIKE", "scvm1231.*"]
+  ],
   "mem": "512",
   "uris": []
 }
  
-
