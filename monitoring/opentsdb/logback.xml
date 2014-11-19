@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!--<jmxConfigurator/>-->
+  <property name="log_dir" value="/var/log" />
+  <property name="log_file" value="opentsdb.log" />
+
+  <appender name="DRFA" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--See http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+    <!--and http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy-->
+    <!--for further documentation-->
+    <File>${log_dir}/${log_file}</File>
+    <encoder>
+        <pattern>%d{ISO8601} %p %c{10}: %m%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>${log_dir}/${log_file}.%d{yyyy-MM-dd}</fileNamePattern>
+    </rollingPolicy>
+  </appender>
+
+  <logger name="org.apache.zookeeper" level="info"/>
+  <logger name="org.hbase.async" level="info"/>
+  <logger name="com.stumbleupon.async" level="info"/>
+  <root level="info">
+    <appender-ref ref="DRFA"/>
+  </root>
+</configuration>
+
