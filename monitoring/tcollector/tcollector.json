@@ -1,0 +1,18 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "registry1.ut1.omniture.com:5000/mkruse/tcollector:latest"
+    }
+  },
+  "id": "tcollector",
+  "instances": "1",
+  "cpus": "0.1",
+  "constraints": [["hostname", "UNIQUE"]],
+  "mem": "128",
+  "uris": [],
+  "cmd": "/bin/bash /root/tcollector/exec.sh",
+  "env": {
+    "TSD_HOST": "armator.eur.adobe.com"
+  }
+}
