@@ -1,0 +1,28 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "skynetservices/skydns:latest", 
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 53,
+          "hostPort": 53,
+          "protocol": "udp"
+        }
+      ]
+    },
+    "volumes" : []
+  },
+  "env": {
+    "ETCD_MACHINES": "http://scvm1231.dev.ut1.omniture.com:4001,http://scvm1232.dev.ut1.omniture.com:4001,http://scvm1235.dev.ut1.omniture.com:4001,http://scvm1240.dev.ut1.omniture.com:4001,http://scvm1241.dev.ut1.omniture.com:4001"
+  },
+  "id": "/skydns",
+  "instances": "1",
+  "cpus": "1",
+  "constraints": [["hostname", "UNIQUE"]],
+  "mem": "512",
+  "uris": []
+}
+ 
+
