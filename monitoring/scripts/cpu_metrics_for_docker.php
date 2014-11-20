@@ -1,6 +1,5 @@
 <?php
 $host = 'localhost';
-$host = 'scvm1277.dev.ut1.omniture.com';
 $port = '31400';
 $url = '/api/v1.2/containers';
 $sleep = 58;
