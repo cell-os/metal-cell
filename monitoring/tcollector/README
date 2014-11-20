@@ -1,0 +1,6 @@
+#Submit to Marathon
+
+`http POST http://scvm1231.dev.ut1.omniture.com:8080/v2/apps < marathon.json`
+
+
+

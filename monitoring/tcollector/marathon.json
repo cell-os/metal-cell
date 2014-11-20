@@ -1,0 +1,18 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "registry1.ut1.omniture.com:5000/metalcell/tcollector:2.0", 
+      "network": null,
+      "portMappings": null
+    },
+    "volumes" : []
+  },
+  "env": {"TSD_HOST": "opentsdb.cell.local"},
+  "id": "tcollector",
+  "instances": "2",
+  "constraints": [["hostname", "UNIQUE"]],
+  "cpus": "1",
+  "mem": "32",
+  "uris": []
+}
