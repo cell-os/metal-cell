@@ -1,0 +1,24 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "registry1.ut1.omniture.com:5000/metalcell/bosun:1.6", 
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 8070,
+          "hostPort": 31667,
+          "protocol": "tcp"
+        }
+      ]
+    },
+    "volumes" : []
+  },
+  "id": "bosun",
+  "instances": "1",
+  "constraints": [["hostname", "UNIQUE"]],
+  "cpus": "1",
+  "mem": "512",
+  "uris": []
+}
+
