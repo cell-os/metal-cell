@@ -14,10 +14,9 @@ ADD logback.xml /opt/opentsdb/share/opentsdb/
 ADD opentsdb.conf /opt/opentsdb/share/opentsdb/
 ADD start-opentsdb.sh /opt/opentsdb/
 #RUN chmod +x /opt/opentsdb/start-opentsdb.sh
-EXPOSE 4242
+#EXPOSE 4242
 
-CMD bash -x /opt/opentsdb/start-opentsdb.sh
-
+CMD env && python -mSimpleHTTPServer $PORT0
 
 #/opt/opentsdb/build/tsdb tsd --port=4242 --staticroot=/opt/opentsdb/build/staticroot --cachedir=/tmp --auto-metric
 #/opt/opentsdb/build/tsdb tsd --config <%= @tsdb_home %>/share/opentsdb/opentsdb.conf

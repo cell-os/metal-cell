@@ -2,24 +2,20 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "registry1.ut1.omniture.com:5000/metalcell/opentsdb:2.0", 
-      "network": "BRIDGE", 
-      "portMappings": [
-        {
-          "containerPort": 4242,
-          "hostPort": 31666,
-          "protocol": "tcp"
-        }
-      ]
+      "image": "registry1.ut1.omniture.com:5000/amuraru/test:1.2"
     },
     "volumes" : []
   },
-  "id": "opentsdb",
-  "instances": "5",
+  "ports": [
+    0,
+    0,
+    0
+  ],
+  "id": "amuraru",
+  "instances": "1",
   "constraints": [["hostname", "UNIQUE"]],
   "cpus": "2",
   "mem": "512",
   "uris": []
 }
-
 

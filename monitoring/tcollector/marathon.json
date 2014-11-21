@@ -2,7 +2,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "registry1.ut1.omniture.com:5000/metalcell/tcollector:2.0", 
+      "image": "registry1.ut1.omniture.com:5000/metalcell/tcollector:2.1", 
       "network": null,
       "portMappings": null
     },
