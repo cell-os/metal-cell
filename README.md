@@ -5,82 +5,140 @@ Author:      Cosmin Lehene
 Affiliation: Adobe  
 Web:          httt://metal.corp.adobe.com  
 Date:         June 2, 2014  
-Updated:   Sept 15, 2014
-Misc:         The current version of this document lives in my stackedit.io - keep that in mind if you want to make any changes  
+Updated:   Feb 1, 2015
 
-##Work in progress! 
 
-Metal Cell
-========
-Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attempts to move storage and compute from traditional, monolithic, multi single-node setups to homogenous pools of resources (cells) using existing Open Source technology.
+*Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attempts to move storage and compute from traditional, monolithic, multi single-node setups to homogenous pools of resources (cells) using existing Open Source technology.*
+
+Notes for the reader
+================
+
+**Work in progress!**
+The actively edited version of this document lives in my [stackedit.io](https://stackedit.io/).
+Keep in mind that it's being updated so stuff may get moved, rephrased or deleted and new stuff added. Also there are "loose" ends and incomplete parts. Some may be intentional some accidental.
+If you have suggestions, changes, etc. you can email me or send them through pull requests. See the [open-development contribution guide](http://saasbase.corp.adobe.com/guides/saasbase_contributors.html).
+
+**Beware of the Metal Cell "duality confusion"**
+"Metal Cell" is referred to both as an ***abstract concept/approach/philosophy/vision*** related to how general computation can be done at scale along with the software development lifecycle in such an environment, as well as a ***concrete system*** with a concrete hardware and software architecture. While we may refer to the actual software stack with a different name in the future, "Metal Cell" is currently used to refer to both. Keep that in mind to avoid getting confused.
+
+**Rationale**
+The rationale for *this document* is to apply  some [reusability](http://en.wikipedia.org/wiki/Reusability) concepts to "knowledge" that has been generally fragmented and repeated over emails, wikis and sometimes blog posts. It's an attempt to give a cohesive view of disparate but, after all, interrelated aspects of distributed systems, and show how a concerted approach to systems at scale can work.
+
+**Community**
+The "concrete system" implementation is an Adobe community effort and follows [Adobe's Open Development Principles](https://wiki.corp.adobe.com/display/~bdelacre/Open+Development+Principles).   Discussions happen on public mailing lists, code is accessible in the internal Github repos and issues are tracked in the Adobe official JIRA.
+
+While there's a planned roadmap, the dates are mere desires so if you need something that's not there or you need it earlier consider discussing it in the community and potentially contributing to it. What we'll try to do as a community is offer the "framework" in which such work happens in the best possible way for you and with the best possible outcome in terms of quality and time.
+
+**Developer mailing list**: DL-metal-cell-dev@adobe.com (alias metal-cell@adobe.com)  
+
+**Users mailing list**: DL-metal-cell-users@adobe.com  
+
+**Github**: https://git.corp.adobe.com/metal-cell/  
+
+**JIRA**
+
+* https://issues.adobe.com/browse/CELL
+* https://issues.adobe.com/browse/HSTACK
+
+**Docs**: 
+* https://git.corp.adobe.com/pages/metal-cell/metal-cell/  
+* https://git.corp.adobe.com/metal-cell/metal-cell/wiki/
+
+
+Abstract
+=======
+
+Getting new products from whiteboards to paying customers often involves more effort for integration,  automation, performance and reliability testing, etc. than for the actual software development. 
+
+Just the cost of reliability can exceed that of actual development. And, in spite of a large effort and the actual quality of the code, reliability expectations may still not be met. However, customers pay for functionality and expect reliability to be part of it.
+
+The rate at which new "big data" technologies become available has increased in the last few years to a level where it seems that there's a new technology that promises to change everything comes up every week. Keeping track and making informed decisions can be daunting. 
+As an effect we witness a proliferation of software stacks and hardware configurations and, as a result, an increase in *system complexity*. 
+Thus, development and operations teams need to manage more complexity (sometimes more than they can handle). 
+This can lead to fragile infrastructure that further leads to fragile services and, eventually, unhappy customers.
+It gets further exacerbated by acquisitions which add to the overall complexity, while customers increase their expectations for smooth integrations across the products and expect the promised magic of "the cloud".
+
+At the same time, as the "cloud effect" has led to a "democratization of big data", we see an increased speed of innovation from small, agile startups in areas that were traditionally accessible to large enterprises only. 
+In contrast, large enterprises have a legacy of existing technology, products and customers that comes at a cost that reflects into time to market, overall cost and agility.
+
+Most times, however, it's just the product or the feature that differs in an overcomplicated process that may involve redundant infrastructure, processes etc.  
+Yet we still tend to solve the whole problem, again and again and end up with "deep monoliths" - products along their *unique* infrastructure, processes and teams to support them. Each product has it's own cluster, own technology stack, own team that manages up everything from the bottom infrastructure-level up to the application-level.
+
+Most of the above aspects could be part of a *reusable platform* but it's not immediately obvious how and it can be hard to solve in practice without having "the whole big picture" first. 
+
+Metal Cell is that "big picture". 
+
+It got born from years of learning from years of experience with open-source productization, integration, development, and operation of distributed systems in conjunction with industry and research literature.
+One of the most influential papers has been the "The Datacenter as a Computer - An Introduction to the Design of Warehouse-Scale Machines" by Google's Luiz André Barroso and Urs Hölzle. 
+
+Metal Cell attempts to bring that in the reality of our own datacenters, the clouds and the existing and in progress open-source software.
+
 
 "Exec Bullets"
 --------------------  
-* **Cost savings** through consolidated infrastructure and resource sharing that could reduce the hardware footprint by 10x.
 * **Improved time to market** through accelerated development and self service provisioning of both infrastructure (IaaS) and cluster level services (PaaS)
-
-"Dev Bullets"
-------------------  
-* Any language at any layer between hardware and end-application
+* **Reliability** through redundancy, high availability and linear scalability of every layer in the stack
+* **Cost efficiency** through consolidated infrastructure and resource sharing that could reduce the hardware footprint by 10x(.
 
 
-Community
-==========
-Developer mailing list: DL-metal-cell-dev@adobe.com (alias metal-cell@adobe.com)  
-Users mailing list: DL-metal-cell-users@adobe.com  
-Github Org: https://git.corp.adobe.com/metal-cell/  
-Docs: https://git.corp.adobe.com/pages/metal-cell/metal-cell/  
+The goal of Metal Cell is to improve products ***time to market*** and increase ***reliability *** and ***cost efficiency***.  It achieves this by applying a "disaggregation approach", to systems, breaking monolithic architectures into shared, self-service cluster-level services. (To some extent this can be compared to how operating systems abstract some of the hardware complexity and make common services available for the user-level software.)
 
-Abstract
------------
-The goal of Metal Cell is to improve Adobe products ***time to market*** and increase ***cost efficiency*** through shared, self-service infrastructure and cluster-level services.
-
-The ***cell***  is the "new box". Applications or services that target a *cell* will, instead, access a much larger pool of resources (potentially spanning 10000s of nodes). 
+Thus, the ***cell***  becomes the "new box" and the software running on it acts like a loosely coupled "operating system". However, software that target the *cell* can take advantage of a much larger pool of resources (potentially spanning 10000s of nodes) as well as directly benefit from built-in resiliency to failures, traffic spikes, etc.
 
 The Cell "OS" is made of highly available distributed services that provide:
-* Storage (block, structured, queue)
-* Raw Compute (raw resources such as cores, RAM, IO)
-* Computing Frameworks (batch, event, streaming)
-* Resource allocation and isolation
-* Scheduling
 
-Concretely, the Metal Cell software integrates and builds on top of well known, open-source software such as Hadoop, Spark, Mesos, Docker, HBase, Zookeeper, etc. and exposes them as readily available integrated services that development teams could use as self-service, shared resources in all data centers.
+* Resource (storage, compute, IO) management (isolation, allocation, scheduling)
+* Storage (block, structured, queue)
+* Compute (raw resources such as cores, RAM, IO)
+* High Level Computing Frameworks (batch, event, streaming)
+* Monitoring and Alerting
+
+Concretely, the Metal Cell *software stack* integrates and builds on top of well known, open-source software such as Hadoop, Spark, Mesos, Docker, HBase, Zookeeper, etc. and exposes it as readily-available, integrated services that development teams could use as self-service, shared resources across data centers and clouds.
 
 **Mechanical Sympathy**
-Rather than oversimplifying and hiding the complexities of distributed systems, Metal Cell is distilling them. While solving the common problems of distributed systems (storage, compute, scheduling, etc.) it abstracts, but not hide, their actual complexities and keeps them transparent to developers, so that applications can be written in a responsible manner in relation to them. 
-The assumption here is that we can only abstract, but not make go away, things like speed of light, latency, bandwidth, etc. For this reason we should not hide them underneath [APIs that are supposed to make them look like running on a single machine](http://writings.quilt.org/2014/05/12/distributed-systems-and-the-end-of-the-api/).
+We can only abstract, but not make go away, things like speed of light, latency, bandwidth, etc. For this reason we should not hide them underneath [APIs that are supposed to make them look like running on a single machine](http://writings.quilt.org/2014/05/12/distributed-systems-and-the-end-of-the-api/).
+Rather than oversimplifying and hiding the complexities of distributed systems, Metal Cell, instead, distills them. While solving some of the common problems of distributed systems (storage, compute, scheduling, etc.), it abstracts, but not hide, their complexities and keeps them transparent to developers, so that applications can be written in a responsible manner in relation to them. 
 
 Motivation
 =========
 
-**Time to Market**
+Time to Market
+------------------
 Reduce new applications turnaround time from months to days enabling continuous delivery.
 
-Traditional development forces the development teams to be able to code, deploy and operate full stacks. With the proliferation of distributed systems these stacks may involve more than 10 different services, making development even more complex. Many times more time ends up being spent in setting up and maintaining development environments[^footnote] and integration with all components, dealing with versions conflicts, etc. than on the sell-able product software. 
+Current practices involve teams that code, deploy and operate full stacks. With the proliferation of distributed systems, these stacks may involve more than 10 different services, making development and operations complex. Many times more time ends up being spent in setting up and maintaining development environments - integration with all components, dealing with versions conflicts, etc. than on the sellable product. 
 	
-*Note: More, when releasing these systems to production, there's an assumption that these could be handed over to operations teams. 
+*Note: More, when releasing these systems to production, there's an assumption that these could be simply "handed over" to operations teams. However, in reality the "hand-over" process can be a long and sometimes impossible to happen as expected.
 
-By developing applications and services against cells (cluster-level services) we are able to decouple a lot of the distributed systems complexity from the application logic. Self-service provisioning enables developers to run applications against existing clusters. This reduces the development time substantially. 
+This is to some extent improved in cloud environments as general purpose functions such as storage or computing may be available "as a service" (*AAS), however the unit of computation still is the "machine" and implications of integrations between several products are impossible, more than from a security / access level perspective. 
 
-Provisioning and deployment become a matter of consuming a service so time to market is further reduced.
+By developing applications and services against cells (benefiting from the cluster-level services) we are able to decouple a lot of the distributed systems complexity from the application logic. Self-service provisioning enables developers to run applications against existing clusters. This reduces the development time substantially and at the same time changes the unit of computation from a *machine* to a *pool of resources* (a cluster of machines).
 
-By relieving development teams from this overhead, more services can be developed and tested instead.
+Provisioning and deployment become a matter of consuming a service so time to market is further reduced[ see Marathon, Aurora, Kubernetes].
 
-R&D 
-Many times we face a chicken and egg problem when it comes to new services. We need infrastructure to test and we wait to be ready with software in order to order it. 
-Being able to "tap" into existing infrastructure across data centers and public cloud would speed up prototyping.
+By relieving development teams from this overhead more time can be spent on developing software with direct business value.
 
-Lean hardware provisioning 
+Many times we face a "chicken-and-egg problem" when it comes to new services. We need the infrastructure to estimate performance but we wait to be ready with software in order to order it. 
+Being able to "tap" into resources in existing infrastructure across data centers and public cloud would solve this. Also by sharing the infrastructure the cost is amortized across more products (see "cost efficiency").
+
+Lean hardware provisioning
+We decouple hardware provisioning and product delivery, essentially removing the hardware provisioning from the critical path. There's always spare capacity to start a new project, and the additional capacity adds more resources for everyone. 
 
 
-**Cost Efficiency**
+Cost Efficiency
+-----------------
 Benefits from economy of scale should allow us to reduce our hardware footprint by 10x and decrease operational overhead substantially.
 
 The infrastructure load in typical datacenters (as in Adobe's) is between 1% and 10% (normally skewed towards 1%).
 Unfortunately a physical node consumes ~50% of the total energy when idle. By collocating workloads we can increase hardware utilization rate substantially (highly efficient deployments get above 60% utilization).
 
-Traditionally services are deployed in a monolithic fashion with a standard deployment containing dedicated machines for web servers, database servers and other roles. 
-This is both energy inefficient and generally results in highly fragmented environments - with each service having it's own dedicated hardware profiles, software versions and operations teams. Also the operation teams need to be skilled enough to support the entire variety of the stack being used.
+By using resources more efficiently and by concentrating more compute and storage capacity within the same space we can reduce the hardware footprint. Note that hardware footprint doesn't translate proportionally to costs so this should not necessarily be projected in a 10x cost reduction.
+
+Inefficiencies of Monolithic Systems Architectures
+Configuration items proliferation
+Traditionally services are deployed in a *monolithic* fashion with a standard deployment containing dedicated machines (aka roles) for web servers, database servers and others.
+This is energy inefficient and results in fragmented environments due to service-dedicated hardware profiles, os-es, software versions and operations teams. 
+Operation teams need manage all this complexity and also need to have a broad enough skill set to support the entire variety of the stack being used. Expertise over such a broad set of technologies is hard to achieve in practice by single teams that are dedicated for products. Generally this comes at higher costs and decreased reliability.
 
 By consolidating on shared infrastructure less hardware profiles (generally 2 or 3 vs 10s) need to be used. This means less complexity to manage and debug but also improved discount rates from vendors, a larger pool of spare parts, etc. Nevertheless, it also removes the burden of hardware profile selection from product teams, that can now  model their expected load against a shared pool of granular resources (e.g. compute, memory, IO).
 
@@ -92,11 +150,32 @@ By sharing a larger infrastructure the additional capacity is much larger and ca
 By sharing infrastructure between workloads we could achieve a much higher compute efficiency. Also compute efficiency can now be measured uniformly accross an entire fleet along with all running workloads opening new optimization possibilities like [leveraging non-used cycles and cheap energy](http://googleblog.blogspot.ca/2014/05/better-data-centers-through-machine.html)
 
 
-Metal Cell Architecture
-==================
+Reliability 
+------------
+(Chapter in progress)
+
+Technical
+* fault tolerance
+* high availability
+* scalability
+
+Human:
+* layer based expertise
+* 
+Reliability depends both on technical and human factors.
+
+Metal Cell Concepts/Terminology
+============================
+
 
 World view
-----------------
+-------------
+
+There's a lot of complexity in today's systems that may involve multiple geographically distributed datacenters along with local and global networks that connect nodes, racks, etc.
+
+###"physical"* scope hierarchy
+[^footnote Using quotes for "physical" as cell is actually a logical construct on top of some physical entities a physical analogy would be a cluster]
+
 * Global (the collection of all cells across the globe)
 * Region
 * Cell
@@ -104,68 +183,215 @@ World view
 * Racks
 * Nodes
 * Containers
+* Processes
+* Threads
 
-Introduction: Resource Isolation
---------------------------------------------
+----------------
+###Global / Regions
+```                                                                 
+                                                                              
+     +-------+   +-------+         +-------+  +-------+         +-------+     
+     |       |   |       |         |       |  |       |         |       |     
+     | US-W  |   |  US-E |         | EU-W  |  |  EU-E |         | AP NE |     
+     |       |   |       |         |       |  |       |         |       |     
+     +-------+   +-------+         +-------+  +-------+         +-------+     
+                                                                              
+                                                                              
+           +-------+                                          +-------+       
+           |       |                                          |       |       
+           |  SA   |                                          | AP SE |       
+           |       |                                          |       |       
+           +-------+                                          +-------+       
+   
+```
 
-Economy of scale, resource utilization, resource sharing, etc.   
-Overcommitting resources to increase resource utilization.
+### Region / Datacenter  / Cells
 
-Imagine you'd have a store where each customer has it's own sales person.
-That's generally nice, but it's also very expensive for both the store and the customer. Although there are stores like that (imagine an expensive watch store), generally the sales people are *overcommitted* - hence they serve more than one customer. *Overcommitting* is something that has been used in computing for quite a while.  Multitasking is one way to share the CPU between multiple tasks, hence overcommitting it. Overcommitting doesn't necessarily cause performance degradation, but that's probable depending on the overcommit factor.
+```
++---------------------------------------------------------+
+|   +power             +power             +power          |
+|   |                  |                  |               |
+|   |    +network      |    +network      |    +network   |
+|   |    |             |    |             |    |          |
+|  ++----+-------+    ++----+-------+    ++----+-------+  |
+|  |             |    |             |    |             |  |
+|  |             +----+             +----+             |  |
+|  |  OR1-CELL-1 |    |  OR1-CELL-1 |    |  OR1-CELL-1 |  |
+|  |  A: 99.95%  |    |  A: 99.95%  |    |  A: 99.95%  |  |
+|  +-------------+    +-------------+    +-------------+  |
+|                          OR1                            |
++---------------------------------------------------------+
 
-The checkout line at your local store is an example of performance degradation when your normal wait time will get degraded. 
+```
 
-Economy of scale will determine the efficiency. The larger the store is the less probable is that there will be unutilized cashiers or customers that will stay in line for too long.
+### Cell
 
-As you see resource utilization optimization is a common problem. However just as the local store may have an express line, we generally need to guarantee some service level agreement related to some resource. 
+```
+            +--+Power circuit                                                 
+            |                          +--+ Network                           
+            |                          |                                      
+        +---+--------------------------+---------------------+                
+        |                                                    |                
+        |  +---------------------------------------+         |                
+        |  |                                       |         |                
+        |  |  +---------+-----------+              |         |                
+        |  |  |         |           |              |         |                
+        |  |  +-----+   +-----+     +-----+        |         |                
+        |  |  |-----|   |-----|     |-----|        |         |                
+        |  |  |-----|   |-----|     |-----|        +--+ ...  |                
+        |  |  |-----|   |-----|     |-----|  POD+1 |         |                
+        |  |  |-----|   |-----|     |-----|        |         |                
+        |  |  |-----|   |-----| ... |-----|        |         |                
+        |  |  +-----+   +-----+     +-----+        |         |                
+        |  |  RACK 1    RACK 2      RACK 10        |         |                
+        |  +----+----------------------------------+         |                
+        |       |                                            |                
+        |  +----+----------------------------------+         |                
+        |  |                                       |         |                
+        |  |  +---------+-----------+              +--+ ...  |                
+        |  |  |         |           |              |         |                
+        |  |  +-----+   +-----+     +-----+        |         |                
+        |  |  |-----|   |-----|     |-----|        |         |                
+        |  |  |-----|   |-----|     |-----|        |         |                
+        |  |  |-----|   |-----|     |-----|  POD+3 |         |                
+        |  |  |-----|   |-----|     |-----|        |         |                
+        |  |  |-----|   |-----| ... |-----|        |         |                
+        |  |  +-----+   +-----+     +-----+        |         |                
+        |  |  RACK 1    RACK 2      RACK 10        |         |                
+        |  +---+-----------------------------------+         |                
+        |      |                                             |                
+        |      +                                             |                
+        |      ...                                           |                
+        +----------------------------------------------------+                
+                                                                              
+```
 
+### Node
+```
++------------------------------------------------+
+|                                                |
+| +-------------------------------------------+  |
+| |                                           |  |
+| | +----------+ +----------+   +----------+  |  |
+| | |          | |          |   |          |  |  |
+| | |          | |          |   |          |  |  |
+| | |Container | |          |...|          |  |  |
+| | +----------+ +----------+   +----------+  |  |
+| |  OS / Kernel                              |  |
+| +-------------------------------------------+  |
+|   Physical node                                |
++------------------------------------------------+
 
-Introduction: Onion Layers
---------------------------------------
-You can imagine Metal Cell as layers in an onion. 
+```
 
-Going from a small scale like a OS process to the OS environment and then to the cluster, we may need to worry about similar concerns, such as resource isolation or compatibility, however they'll have different scopes (and potentially solutions) with each level of abstraction (layer)
+Onion Layers
+----------------
 
-While at the OS level binary compatibility may be a concernt, generally at a cluster level it could be the service (RPC) compatibility that we'd be concerned with.
+Conceptually micro scale problems may have macro scale equivalents.
+Going from a process level (small scale)  to a larger level like OS environment and then the cluster level (larger), we may need to worry about similar concerns, such as shared resource management, resource isolation or compatibility. However note the different *scopes* (and potentially different solutions) with each level of abstraction (layer).
 
+Similarly to "Datacenter as a Computer" we refer to 3 broader categories:
+* infrastructure / device / node
+* cluster
+* application
+
+Each however may have it's own inner layers with equivalent concerns WRT resource consumption, resource sharing, capacity, etc.
+
+The actual implications of this *scope* hierarchy can be subtle but broad. 
+
+### Compatibility Layers: Binary vs Wire
+
+Consider for example the *binary compatibility* problem which arises from a shared resource - the library. Most times it's a concern at the OS (node) level due to incompatibilities that may arise. For this reason we have versioning systems and package managers and package repositories, that attempt to solve the problem of dependency and compatibility.
+
+At the cluster-level we recognize the same problem as *API compatibility* (or wire / protocol compatibility). It may be straightforward that the problem is at the same time very similar and that the solutions are very different. 
+
+Think what an Linux distribution represents for example. There's usually a kernel, an init system, one or more filesystems along with a plethora of packages ranging from compilers to databases. A distro represents a "compatible aggregation" of all of the packages involved. The package manager is at the core, managing the complexity of dependencies. 
+However, a package manager's scope is limited at the OS/node level and a cluster-level service could run on multiple nodes that have different versions of the OS, different distributions and even different OS-es (e.g. [SETI@Home](http://setiathome.ssl.berkeley.edu/)). Yet, cluster-level software like Hadoop is packaged into distribution specific packages (e.g. rpm, deb) and many shops try to manage versions through OS-level package managers.
+
+However, consider what a package upgrade means. While perfectly viable from a binary compatibility perspective, a cluster-level service upgrade at the node-level (through yum or apt) could break a service level compatibility, corrupt data and, potentially bring havoc in a cluster. 
+
+The package manager has a clear scope. Attempting to use it beyond it's scope is generally a bad idea.
+
+There have been many attempts to solve this problem. More recent configuration management tools such as CFEngine, Puppet, Chef, Salt, Ansible and others are used to deploy software including cluster-level services. While we have been using some of them extensively, they offer an "intermediary" solution to the actual problem in that they still tackle the problem at a node level and lack robust abstractions required for distributed systems.
+
+While Metal Cell uses some of these to bootstrap the minimal node-level software. This function becomes a concern of some cluster-level software. 
+
+### Resource Management Layers
 At an *OS level* the Kernel manages the local CPU cores, memory and IO resources.
-At a *cluster level* there's a wider view of the resources which includes both servers and the networking equipment which they share.
+At a *cluster level* there's a wider view of the resources which includes both servers and the networking equipment that may be shared across multiple workloads.
 
 * 3 large layer categories: infrastructure, custer, app.
 
-Resource Management and Isolation
-----------------------------------------------------
+Resource Management
+---------------------------
 
-### Infrastructure-Level Resource Management: Plumbing*
+### Resource types and resource quantification
+The variety of resources measures exposed by all devices may may be intimidating, but in reality, most can be quantified in terms of *capacity*, *bandwidth* and *latency*.
 
-Although the resources may vary with each service, there are a few low level basic resources that matter.
+At the infrastructure (or device) level, the main resources we're concerned with are CPU, memory, disk and network[^resource-management-1].
+*Capacity* (or space) is used for indefinite-time data storage resources (e.g. caches, RAM, SSD), while more stateless resources such as networking and compute can be measured in *bandwidth* and *latency*[^resource-management-2].
 
-At the infrastructure (device)-level, the main resources we're concerned with are CPU, memory, IO, disk. Both memory and IO have latency and bandwidth measures that we care**
+[^resource-management-1]:  as a generalization you can imagine just two/three type of resources: those that store and those that process and those that make it possible to transport data from storage to processing.  The measures that we'll mostly care about are *capacity*, *bandwidth* and *latency*.
 
-[footnote: as the server itself has it's own layers, internal subsystems such as network or disk controllers will have their own resource allocation and isolation semantics, however keep in mind that a layer is supposed to abstract wherever possible - think of virtual memoy for example. One could say that given the actual resources such as sillicon chips and energy things could be simplified, while we agree, we need to remain pragmatic]
+[^resource-management-2]: as the physical node itself has it's own layers, internal subsystems such as network or disk controllers may have their own resource allocation and isolation semantics, along with OS or kernel level subsystems that deal with those. However, keep in mind that a layer is supposed to abstract the complexity underneath (e.g. virtual memory). 
 
-**footnote:  as a generalization you can imagine just two/three type of resources: those that store and those that process and those that make it possible to transport data from storage to processing.  The measures that we'll mostly care about are capacity, bandwidth and latency. 
 
-#### Resource Isolation and Containers
+### Resource Utilization 
+
+Average resource utilization in industry is < 10% and skewed towards 1%
+
+![Node](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization%20-%20low.png)
+
+####Over-provisioning for peaks.
+####Accidental over-provisioning
+####Workload types
+
+####Organic growth and Daily, Weekly, Seasonal Load Variation
+
+
+### Resource Oversubscription 
+
+Economy of scale, resource utilization, resource sharing, etc.   
+
+Imagine you'd have a store where each customer has it's own sales person.
+That's generally nice, but also expensive (for both the store and the customer). Although there are stores like that (imagine an expensive watch store), generally the sales people are *oversubscribed* - hence they may serve more than one customer. *Oversubscription* has been used in computing for quite a while to enable multi-tenancy.  Multitasking is one way to share the CPU between multiple tasks, hence oversubscribing it. Oversubscription doesn't necessarily cause performance degradation, but it can if resources end up being *overcommitted*. [^footnote: there's a subtle difference between *oversubscription* and *overcommitment*. Airlines always *oversubscribe* seats on an airplane. It's only when they become *overcommitted* that this becomes a problem. That's usually when airlines will start bidding for seats.]
+
+The checkout line at your local store is an example of performance degradation when your normal wait time will get degraded. 
+
+Economy of scale will determine the efficiency. The larger the store is the less probable it becomes to either have un-utilized cashiers or unserved customers that wait in queue for too long.
+
+Resource utilization optimization is a common problem. However, just as the local store may have an express line, we generally need to guarantee some resource quality of service (QoS). 
+
+
+### Resource Isolation
+
+
+
+#### Containers
 To ensure QoS when sharing resources an isolation mechanism is required.
+
 For example, the express line in your local store has an item-limit (generally less than 10-15). That's a good example of resource isolation to protect blocking the resource (cashier0 from a customer with 5 carts for example. 
 
 In a similar fashion an OS provides mechanisms aimed to isolate resources.  
 The Linux Kernel has namespaces and cgroups[^cgroops-foot] as building blocks to offer resource isolation.
+
+**Resources**
 
 * Namespaces and cgroups  
 	* [namespaces](http://lwn.net/Articles/531114/)
 	* [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt)
 	* http://www.haifux.org/lectures/299/netLec7.pdf
 * Containers
-  * [Linux LXC](https://linuxcontainers.org/), [Google LMCTFY](https://github.com/google/lmctfy), [libcontainer](https://github.com/docker/libcontainer)
+  * [Linux LXC](https://linuxcontainers.org/), [Google LMCTFY](https://github.com/google/lmctfy), 
+  * [libcontainer](https://github.com/docker/libcontainer)
   * [Docker](https://www.docker.io)
+  * [App Container](https://github.com/appc/spec/blob/master/SPEC.md) Specification
+  * [Rocket](https://github.com/coreos/rocket) (an App Container implementation from CoreOS)
 
 #### Docker Containers
 Docker is a container engine with the goal of aiding application packaging and running in lightweight containers. 
 
-##Resources
+**Resources**
 [cgroups redesign](http://www.linux.com/news/featured-blogs/200-libby-clark/733595-all-about-the-linux-kernel-cgroups-redesign)  
 [Linux Plumbers Conference](http://www.linuxplumbersconf.org)  
 [LMCTFY presentation](http://www.linuxplumbersconf.org/2013/ocw//system/presentations/1239/original/lmctfy%20(1).pdf)  
@@ -173,6 +399,12 @@ Docker is a container engine with the goal of aiding application packaging and r
 [Google Embraces Docker](http://www.wired.com/2014/06/eric-brewer-google-docker/)  
 [Google CAdvisor](https://github.com/google/cadvisor)  
 [Google Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)  
+
+
+### Resource Scheduling
+
+
+
 
 ### Cell-Level Resource Management
 With proper node level resource isolation in hand we can look at the cluster-level view of resources.
@@ -197,28 +429,26 @@ With this in mind a stronger abstraction to measure network communication bandwi
 
 ### Global-Level Resource Management
 A cell is by designed constrained to a single physical location (datacenter).
-A cell is also an availability zone so we can think in terms of cell availability.
+A cell is also a failure domain (or availability zone) so we can define a measure of availability for the cell.
 
 To increase availability a workload could target multiple cells, potentially across geographical locations.
-While the stateless or semi-stateless (think in-memory content) workloads are relatively easily relocatable, for persistent state (e.g. in HDFS) replication needs to be considered. 
+While the stateless or semi-stateless (think in-memory content) tasks are relatively easily relocatable, for persistent state (e.g. files, or a database) replication needs to be considered. 
 
-There are data consistency aspects involved, however we'll rather focus on the resource management aspect.
-
+Although there are also data consistency aspects involved, we'll focus on the resource management aspect.
 Just as the cell resource management needs to deal with shared network resources, communication between cells needs to tackle the problem in a similar fashion. 
 
-Fundamentally there's no difference between intra-cell and cross-cell resource management. The only difference is in the capacity. Hence a global view of the resources is not only possible, but highly probable.
-
-This will make the Metal Cell "brain" omnipresent. 
+Fundamentally there's no difference between intra-cell and cross-cell resource management (the differences are in the capacity, bandwidth and latency), so a global view of the resources is possible.
 
 ### Fine-grained ultra-granular application-level resource isolation
 In the opposite extreme of the global view is the micro-level view of a computation.
 Lightweight threads Fibers/coroutines 
 
+
 Performance Monitoring and Debugging
 ---------------------------------------------------------
 
 One of the main concerns in shared environments is related to the potential performance impact and the traceability and attribution of performance issues. 
-This is a fair concern, given that the hardware is shared and and potentially overcommitted. 
+This is especially important when resources are oversubscribed.
 
 Monitoring is intrinsic to Metal Cell, so core services are implicitly monitored.
 
@@ -235,50 +465,53 @@ By integrating performance tracing libraries (HTrace, NativeTrace*) applications
 
 Security
 -----------
-
+TBD
 
 Resources:
 Docker:
-http://www.projectatomic.io/blog/2014/09/yet-another-reason-containers-don-t-contain-kernel-keyrings/
+http://www.projectatomic.io/blog/2014/09/yet-another-reason-containers-don-t-contain-kernel-keyrings/  
 Hadoop:
-http://hadoop.apache.org/docs/r2.3.0/hadoop-project-dist/hadoop-common/SecureMode.html
+http://hadoop.apache.org/docs/r2.3.0/hadoop-project-dist/hadoop-common/SecureMode.html  
 Mesos:
-http://mesos.apache.org/blog/framework-authentication-in-apache-mesos-0-15-0/
+http://mesos.apache.org/blog/framework-authentication-in-apache-mesos-0-15-0/  
 Knox:
-http://knox.apache.org/
+http://knox.apache.org/  
 
-Layers
----------
+
+Mechanical Sympathy: Layer Transparency and QoS 
+--------------------------------------------------------------
+We often relocate software workloads from one platform to another. However distributed infrastructure software is generally optimized based on some assumptions about the underlying hardware and software. For example HDFS replicates each block 3 times and places each replica differently: 1 replica on the local node, 1 replica on different node within the same rack and another replica outside of the rack. The assumptions here are that the local node will have the best latency and bandwidth (by not having to go through a network hop), a node within the same rack is still reachable at a high bandwidth (directly through the top-of-the-rack switch (ToR) ), hence the data block can withstand a node failure and maintain integrity, but in order to withstand a full rack failure (due to failure of the ToR or power circuit) the 3rd replica is outside of the rack. Notice that these are assumptions about the bandwidth, latency, storage capacity as well as the availability from a failure perspective of each of these components. 
+
+Now think about the scenario where you run HDFS in virtualized infrastructure. Not only there's normally no knowledge about the physical location of each data block as we may have all datanodes allocated to the same physical host, but the actual location along with the failure probability, latency and bandwidth can change at runtime.  
+[^footnote]: 
+A more elaborate example is that of *resource scheduling*, *network uniformity*, *data locality*,  violation.
+
+Metal Cell Layers
+------------------------
 A good understanding of various layers* and components of the Metal Cell is useful in order to understand  development practices.
 
-We follow the terminology used in the "Datacenter as a Computer" paper published by Google that introduced the concept of Warehouse Scale Computers (WSC) that essentially make an entire date center behave as a single entity. The ***cell*** in Metal Cell follows the same model.
+Metal Cell follows the terminology used in the "Datacenter as a Computer" paper published by Google that introduced the concept of Warehouse Scale Computers (WSC).
+The ***cell*** in Metal Cell follows the same model of making a large fleet of servers, potentially spanning an entire datacenter, be exposed as single pool of resources.
 
+###Platform-level / Node Level Software
 
-###Platform-level / Node Level
-
-The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents are at infrastructure level.
+The scope of the infrastructure-level software is limited to a physical device. The firmware, drivers, kernel, operating system and clustering agents represent infrastructure level software.
 
 ![Node](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/meta-cell-node-150.png)
 
-
-####???
-Resource isolation 
-The low level 
-
-
-###Cluster-level
+###Cluster-level Software
 
 ![Cell](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/metal-cell-cluster-150.png)
 
 
-####What makes a service a cluster-level core service vs an application-level software?
+####Core/Shared services
 Cluster-level services are managed services that are meant to be shared across workloads that run alongside.
-The ability to share a service across several workloads implies at least a basic level of resource management within the service (think about security,  quotas and QoS).  
+The ability to share a service across several workloads implies resource management capabilities within the service (think about security,  quotas and QoS).  
 
-Examples:
+**Examples:**
+Hadoop Map-Reduce can support multiple jobs and allows for fine control of the resources allocated within the framework. Various schedulers can be used in order to prioritize, preempt or isolate tasks.
 
-* Hadoop Map-Reduce is such a service for example.
-* Apache Kafka not so much (although it may become one).
+Apache Kafka on the other hand, while it does allow some semantics in terms of partitioning, has no isolation mechanisms, hence, one client could potentially saturate the cluster.
 
 
 #### Storage
@@ -317,26 +550,26 @@ It's important to understand what the input, storage (if any) and output of any 
 
 While we abstract most of the complexity of the underlying infrastructure through the cluster-level software we need to maintain control over some of the qualitative aspects. *Latency* and *Bandwidth* are two of the most important aspects that determine the performance and user experience and they need to be taken into account regardless of which the layer we're developing against is.
 
-The actual physical latency and bandwidth parameters of the equipment are (generally) fixed (10GE network or 7200 RPM disk,  etc.). However,  the current load or the *Data Locality* are variable aspects that influence the latency and bandwidth.
+The actual physical latency and bandwidth parameters of the equipment are (generally) fixed (10GE network or 7200 RPM disk,  etc.). However,  the *system load* or the *data locality* are *variable* aspects that influence the latency and bandwidth.
 
 Hence the physical the node, rack, pod or datacenter location of a process as well as the utilization of the shared resources (nodes, switches, routers, firewalls)  is important. 
 
 Bridging Geography and Computational Complexity
-------------------------------------------------------------------------
+-------------------------------------------------------------
 
-While forcing all the computation local to the input source may seem the best candidate, this is not always possible for several reasons.
+While the extreme example of forcing all the computation local to the input source may seem the most efficient, this is not always possible due to either computational complexity or resource availability.
 
 **Uneven distribution of "orthogonal" resources**
-While we may have a 10GE network card on a node, it's possible (and probable) that we won't have enough computing power available. 
+While we may have a 10GE network card on a node, it's possible (and probable) that we won't have enough computing power available to process a 10Gbps stream of data.
 
-A related scenario is that of data storage, that can't happen only on the local node. 
+A related scenario is that of storage space limitations - e.g. the dataset may not fit on a single (data locally) node.
 
 **Computational complexity**
 The fork/join (or map/reduce) computation requires data that from potentially separate inputs to be available in the same reduce/join process.
 
 Managing State
 ----------------------
-
+TBD
 
 Implementation
 =============
@@ -344,9 +577,9 @@ Implementation
 Given the speed at which open-source evolves, relying on proprietary technology (in-house or 3rd party) is risky.
 For this reason Metal Cell's goal is to leverage open-source technology* as much as possible.
 
-###Infrastructure Level
+##Infrastructure Level
 
-#### OS
+### OS
 We're currently targeting CentOS 7 as a base for the Metal Cell
 
 This said, as we're looking at leveraging container technology as well as cluster-level services for most workloads the host OS is likely to need much less than a classical server OS. 
@@ -358,7 +591,7 @@ Within a cell it should be possible to run multiple OS es however.
 Deploying the OS.
 [OpenStack Ironic](https://github.com/openstack/ironic) may be used to deploy the base OS.
 
-#### Clustering software
+### Clustering software
 On top of the OS there are the building blocks for the core cluster-level services
 
 Container support:
@@ -370,9 +603,9 @@ Cluster software agents
 
 As many of the cluster level services that we're running are not (yet) containerized and designed to run on a cluster manager,  we'll likely run some outside of containers initially.
 
-###Cluster-level Infrastructure Software
+##Cluster-level Infrastructure Software
 
-#### Resource Management & Scheduling
+### Resource Management & Scheduling
 
 **Resouce Management**
 * [Mesos](http://mesos.apache.org/)
@@ -384,28 +617,32 @@ While there's probably more enthusiasm around the Mesos ecosystem (also due to S
 
 **Scheduling**
 Long running 
-* [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
+
 * [Marathon](https://github.com/mesosphere/marathon),
+* [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes)
 * [Aurora](http://aurora.incubator.apache.org/)
 
 Both Marathon and Aurora have similar goals.
 
 Batch Scheduling
+
 * [Khronos](https://github.com/airbnb/chronos)
 
-#### Programming Frameworks
+### Cluster Compute Frameworks
 Note that is common for some systems to have their own schedulers
 
 Job based
+
 * [Hadoop Map Reduce]()
 * [Spark](), [Impala], [Presto], [Drill]()
 
 Long running frameworks
+
 * [Storm]
 * [Spark Streaming]
 * [Samza]
 
-#### Storage
+### Storage
 Unstructured (block) - file system
 * [Hadoop HDFS](http://hadoop.apache.org/docs/r1.2.1/hdfs_design.html)
 Structured storage:
@@ -414,7 +651,7 @@ Streams: queues
 * [Kafka](http://kafka.apache.org/) (cluster sharing is limited)
 
 
-#### Distributed Coordination,  Consensus, Synchronization
+### Distributed Coordination,  Consensus, Synchronization
 * [Zookeeper](http://zookeeper.apache.org/)(service)
 
 Note that while zookeeper itself is a service, distributed coordination can be implemented with embedded libraries (there's a plethora using Raft http://raftconsensus.github.io/) 
@@ -439,22 +676,22 @@ TBD - see Standard Service Contract
 ### Supporting technologies
 
 
-Containers:
+**Containers**:
 Docker 
 Kubernetes 
 CAdvisor
 libswarm
 libcontainer
 
-Coordination
+**Coordination**
 Raft
 RPC
 
-Encoding
+**Encoding**
 Protocol Buffers
 Avro 
 
-Parquet 
+Parquet
 
 Active Configurations
 Adobe PrefX
@@ -463,9 +700,9 @@ Tech choices
 -----------------
 
 While the concepts employed in the Metal Cell are fairly stable, many of the technologies and patterns used are new and evolving.
-While Big Data used to be super computing years ago and then became synonym with Hadoop the current ecosystem is much more diversified and there's no reason to believe it won't become even more diversified.
+While Big Data used to be called "super computing" years ago and then became synonym with Hadoop, the current ecosystem is much more diversified and there's no reason to believe it won't become even more diversified.
 
-While we used to be looking at the Hadoop as a single system, the Hadoop ecosystem now contains a large set of technologies (we call these HSTACK). Hadoop has got enterprise notoriety through a consolidated community effort, however, just like linux it evolved organically and heterogeneously. Suffice to say that in terms of the code base there's a lot of legacy. 
+While we used to be looking at the Hadoop as a single system, the Hadoop ecosystem now contains a large set of orthogonal technologies (we call these HSTACK). Hadoop has got enterprise notoriety through a consolidated community effort, however, just like linux it evolved organically and heterogeneously. Suffice to say that in terms of the code base there's a lot of legacy. 
 
 In the meantime new systems have evolved from the open-source and academic communities. One of them is Mesos which is a product of Berkley's AMPLab (along with Spark, MLib, Tachyon,  etc.) 
 
@@ -611,6 +848,7 @@ SIN1-H1 available 6400/7200 cores,  37TB/37TB RAM
 Existing Metal Cells
 ================
 Development Cells:
+[UT1-VCELL-3](https://git.corp.adobe.com/metal-cell/clusters/tree/master/UT1-VCELL-3)
 Production Cells:
 
 
@@ -685,17 +923,17 @@ Related
 * Popcorn
 
 
-History
-======
 
-Metal Cell got born out of learnings from years of running Hadoop, HBase, Zookeeper, Storm, Kafka and other in production for the SaasBase Analytics Project.   
-Planing new deployments - choosing hardware, automating deployments, doing performance and failover testing, over and over again has led to the standardization of concepts and practices around distributed technology. There's a new technology popping up every week at least and making choices is not always easy. Sometimes the best setup is on one technology sometimes on another and sometimes on both. However a proliferation of software stacks generally leads to a proliferation of hardware profiles and deployments and teams and it can lead to fragile infrastructure that further leads to fragile service to our customers. 
 
 
 
 Reference
 ========
+* [The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines](http://www.morganclaypool.com/doi/abs/10.2200/S00516ED2V01Y201306CAC024)  
+* [Omega: flexible, scalable schedulers for large compute clusters](http://research.google.com/pubs/pub41684.html)
+* [Mesos: A Platform for Fine-Grained Resource Sharing in the Data Center](https://www.cs.berkeley.edu/~alig/papers/mesos.pdf)
+
 * [Platform Ecosystem Problem Statement](https://wiki.corp.adobe.com/display/omtrcache/The+Platform+Ecosystem)  
 * [The future of the infrastructure is metal (cells) - Slides](https://www.dropbox.com/s/cw5a6bw9c7hhtvh/The%20Future%20of%20Platform%20is%20Metal%20%28cells%29.pptx)  
 * [The future of the infrastructure is metal (cells) - Video Analytics Mini-Summit Recording](https://my.adobeconnect.com/p3wea44zvb0/) @~ 00:21:40  
-* [The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines](http://www.morganclaypool.com/doi/abs/10.2200/S00516ED2V01Y201306CAC024)  
+
