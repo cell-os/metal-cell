@@ -1,6 +1,6 @@
 {
   "id": "dns-lb-cr", 
-	"cmd": "./fill_etcd_from_marathon.sh conference 58000",
+	"cmd": "./bash-lb.sh conference 58000",
     "container": {
         "docker": {
             "image": "registry1.ut1.omniture.com:5000/metalcell/discovery"

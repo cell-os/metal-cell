@@ -20,6 +20,6 @@ RUN \
   tar xzvf etcd-v0.5.0-alpha.4-linux-amd64.tar.gz
   
 
-ADD fill_etcd_from_marathon.sh .
+ADD bash-lb.sh .
 
-CMD ./fill_etcd_from_marathon.sh cr.corp.adobe.com 58000
+CMD ./base-lb.sh cr.corp.adobe.com 58000
