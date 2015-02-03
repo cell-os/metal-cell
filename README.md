@@ -5,7 +5,7 @@ Author:      Cosmin Lehene
 Affiliation: Adobe  
 Web:          httt://metal.corp.adobe.com  
 Date:         June 2, 2014  
-Updated:   Feb 1, 2015
+Updated:   Feb 3, 2015
 
 
 *Metal Cell is Adobe's collaborative "Datacenter as a Computer" effort that attempts to move storage and compute from traditional, monolithic, multi single-node setups to homogenous pools of resources (cells) using existing Open Source technology.*
