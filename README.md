@@ -340,17 +340,17 @@ At the infrastructure (or device) level, the main resources we're concerned with
 
 Average resource utilization in industry is < 10% and skewed towards 1%
 
-![Low utilization across a single workload](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization%20-%20low.png)
+![Low utilization across a single workload](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-low.png)
 
 There are multiple reasons for this, including the type of workloads, over-provisioning for peak load, etc. However a lot of this can be attributed to monolithic architectures.
 
 Across an organization an aggregation of loads across different infrastructures from different products may look like this:
 
-![Low utilization across an organization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization%20-%20across.png)
+![Low utilization across an organization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-across.png)
 
 In contrast the resource utilization in Metal Cell can be much higher:
 
-![Metal Cell Utilization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization%20-%20metal-cell.png)
+![Metal Cell Utilization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-metal-cell.png)
 
 (incomplete)
 
