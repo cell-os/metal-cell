@@ -1,0 +1,221 @@
+#Internal TechOps repository
+#package_repository:
+#  type: http
+#  url: http://netops-repo/saasbase/
+
+# cluster specific
+cluster_name: "saasbase-quickstart-1"
+cluster_email: "root@localhost"
+cluster_url: "%{fqdn}"
+http_balancer_host: "%{cluster_url}"
+
+load_balancer_ip: "%{hostname}"
+network: "%{ipaddress}"
+network_mask: 25
+nic: eth0
+ntp_servers:
+  - 10.128.6.247
+  - 10.128.4.247
+  - 10.116.102.247
+  - 0.pool.ntp.org
+
+hadoop::version: hadoop-2.5.0-cdh5-adobe-mapred
+
+docker::version: 1.3.1
+
+mesos::version: "0.21.1-1.1.centos701406"
+mesos::zookeeper: "zk://localhost:2181/mesos"
+mesos::quorum: 1
+
+marathon::version: "0.7.6-adobe"
+marathon::marathon_master: "zk://localhost:2181/mesos"
+marathon::marathon_zk: "zk://localhost:2181/marathon"
+
+service_enable: true
+# opsview server
+opsview_server: "%{fqdn}"
+critical_tables:
+  - ads__stats
+critical_meta_tables:
+  - "hbase:meta"
+hdfs_checked_paths:
+  - /
+# opentsdb
+tsd_host: "%{hostname}"
+# hadoop
+hadoop_config:
+  heapsize: 512
+hadoop.dfs.nameservice_id: "%{fqdn}:9000" # WARN: host:port ONLY for no-HA clusters. Don't replicate
+hadoop_data_partition_prefix: /mnt/data_
+hadoop_create_data_root: true
+hadoop_number_of_disks: 1
+hadoop_hdfs_replication: 1
+hadoop_data_nodes:
+  - "%{hostname}"
+hadoop_ha_enabled: false
+hadoop_gid: 1501
+hadoop_uid: 1501
+
+hadoop::proxyusers:
+  - name:   oozie
+    groups: ['*']
+    hosts:  ['*']
+  - name:   httpfs
+    groups: ['*']
+    hosts:  ['*']
+  - name:   hue
+    groups: ['*']
+    hosts:  ['*']
+  - name:   mapred
+    groups: ['*']
+    hosts:  ['*']
+  - name:   hadoop
+    groups: ['*']
+    hosts:  ['*']
+  - name:   root
+    groups: ['*']
+    hosts:  ['*']
+
+hadoop::historyserver_host: "%{fqdn}"
+# fuse 4j
+fuse4j_mount: /mnt/hdfs
+# hadoop namenode HA
+hadoop.dfs.nameservice_id: "%{fqdn}:9000"
+hadoop_namenode_folders:
+  - /var/hadoop_namenode
+hadoop_secondarynamenode_folders:
+  - /var/hadoop-namesecondary
+nn1_ip: "%{ipaddress}"
+nn1_host: "%{fqdn}"
+nn2_ip: "%{ipaddress}"
+nn2_host: "%{fqdn}"
+nn_virtual_ip: "%{ipaddress}"
+nn_virtual_host: "%{fqdn}"
+# zookeeper
+zk_quorum:
+  - "%{hostname}"
+zk_port: 2181
+# kafka
+kafka_zk_chroot: /kafka
+kafka_brokers:
+  - "%{hostname}"
+kafka_create_data_root: true
+kafka_port: 9096
+kafka_zk_chroot: "/kafka"
+kafka_broker_params:
+  num.partitions: 1
+
+kafka_producer_props:
+  realtime:
+    acks: 1
+    enqueue_timeout_ms: -1
+    backoff_ms: 200
+    retries: 200
+    queue: 10100
+    batch: 200
+    topic_metadata_refresh_interval: 10000
+  mapreduce:
+    acks: 1
+    enqueue_timeout_ms: 60100
+    backoff_ms: 500
+    retries: 172800
+    queue: 50
+    batch: 50
+    topic_metadata_refresh_interval: 10000
+
+# storm
+storm_nimbus: "%{hostname}"
+storm_ui_port: 8050
+storm_supervisor_ports:
+  - 6700
+  - 6701
+  - 6702
+  - 6703
+  - 6704
+  - 6705
+
+storm_data_folder: /mnt/storm
+storm_tick_interval_ms: 500
+storm_params:
+  worker.childopts: -Xmx768m
+  ui.childopts: -Xmx256m
+  supervisor.childopts: -Xmx256m
+  nimbus.childopts: -Xmx256m
+
+# hbase
+hbase_config:
+  heapsize          : 512
+  regionserver_opts : "-Xmx512m"
+  master_opts       : "-Xmx256m"
+  thrift_opts       : "-Xmx256m"
+  zookeeper_opts    : "-Xmx256m"
+  avro_opts         : "-Xmx256m"
+  rest_opts         : "-Xmx256m"
+
+# saasbase
+saasbase_analytics_host: "%{hostname}"
+saasbase_analytics_port: 9094
+saasbase_analytics_config:
+  heapsize: 256
+saasbase_browser_host: "%{hostname}"
+saasbase_browser_port: 9091
+
+# realtime: mongrel
+mongrel_static_content:
+    nbc:
+        trackingInterval: 10
+        trackExternalErrors: 1
+        setupCheckInterval: 180
+
+mongrel_ports:
+  - 8081
+mongrel2handler_push_ports:
+  - 20001
+mongrel2handler_pub_ports:
+  - 21001
+handler2spout_ports:
+  - 25001
+# realtime: realtime
+realtime_zmq_hwm: 500
+realtime_kafka_topic: saasbase.events
+realtime_hbase_table: ads__stats
+
+realtime_entry_mapper_workers: 1
+realtime_entry_executors_per_worker: 1
+realtime_entry_tasks_per_executor: 1
+realtime_mapper_executors_per_worker: 1
+realtime_mapper_tasks_per_executor: 1
+
+realtime_reducer_workers: 1
+realtime_reducer_executors_per_worker: 1
+realtime_reducer_tasks_per_executor: 1
+
+realtime_writer_workers: 1
+realtime_writer_executors_per_worker: 1
+realtime_writer_tasks_per_executor: 1
+
+hstack_extra_config:
+  mapred-site: |
+    <property>
+      <name>mapred.child.java.opts</name>
+      <value>-Xmx256M</value>
+    </property>
+
+hosts:
+  - 127.0.0.1        		localhost.localdomain localhost
+  - ::1              		localhost6.localdomain6 localhost6
+  - "%{ipaddress_eth1}            %{fqdn} %{hostname}"
+
+tcollector_sc_va:
+  endpoint: api.vm577.dev.ut1.omniture.com
+  user: canary:Video Analytics
+  secret: 5070332db2afc0b3e379e0d9634e0eab
+  rsid: videobulkload
+
+#wolap
+wolap_enable: true
+wolap_config:
+  wolap:
+    props:
+      wolap:
+        saasbase.job.files: ${hdfs.base.url}/clients/ads/doc/job.json

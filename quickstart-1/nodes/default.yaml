@@ -1,0 +1,18 @@
+---
+roles:
+  - host
+  - docker
+  - zookeeper
+  - mesos::master
+  - mesos::slave
+  - marathon
+  - hadoop_2
+  - hadoop_2_namenode
+  - hadoop_2_resourcemanager
+  - hadoop_2_jobhistoryserver
+  - hadoop_2_datanode
+  - hadoop_2_nodemanager
+  - hbase_hadoop_2
+  - hbase-thrift
+  - kafka
+
