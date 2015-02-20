@@ -23,6 +23,8 @@ hadoop::version: hadoop-2.5.0-cdh5-adobe-mapred
 
 docker::version: 1.3.1
 docker::extra_parameters: --insecure-registry=registry1.ut1.omniture.com:5000
+# Bind docker to the external address as well
+docker::tcp_bind: "%{ipaddress_eth1}:2375"
 
 mesos::version: "0.21.1-1.1.centos701406"
 mesos::zookeeper: "zk://localhost:2181/mesos"
