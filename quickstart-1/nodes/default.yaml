@@ -3,6 +3,7 @@ roles:
   - host
   - docker
   - zookeeper
+  - etcd
   - mesos::master
   - mesos::slave
   - marathon
