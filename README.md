@@ -14,43 +14,56 @@ Notes for the reader
 ================
 
 **Work in progress!**
-The actively edited version of this document lives in my [stackedit.io](https://stackedit.io/).
 Keep in mind that it's being updated so stuff may get moved, rephrased or deleted and new stuff added. Also there are "loose" ends and incomplete parts. Some may be intentional some accidental.
-If you have suggestions, changes, etc. you can email me or send them through pull requests. See the [open-development contribution guide](http://saasbase.corp.adobe.com/guides/saasbase_contributors.html).
+If you have suggestions, changes, etc. you can send an email to the list or make a pull requests. See the [open-development contribution guide](http://saasbase.corp.adobe.com/guides/saasbase_contributors.html).
 
-**Beware of the Metal Cell "duality confusion"**
-"Metal Cell" is referred to both as an ***abstract concept/approach/philosophy/vision*** related to how general computation can be done at scale along with the software development lifecycle in such an environment, as well as a ***concrete system*** with a concrete hardware and software architecture. While we may refer to the actual software stack with a different name in the future, "Metal Cell" is currently used to refer to both. Keep that in mind to avoid getting confused.
+**Beware of the Metal Cell / cell-os "confusion"**
+**"Metal Cell"** describes the fundamental aspects of the "Datacenter as a Computer" vision and architecture of such a system along with the software development lifecycle in this types of environments. 
+**"cell-os"** is its implementation, the ***concrete system*** that gets deployed and run in datacenters and clouds.
 
 **Rationale**
-The rationale for *this document* is to apply  some [reusability](http://en.wikipedia.org/wiki/Reusability) concepts to "knowledge" that has been generally fragmented and repeated over emails, wikis and sometimes blog posts. It's an attempt to give a cohesive view of disparate but, after all, interrelated aspects of distributed systems, and show how a concerted approach to systems at scale can work.
+The rationale for *this document* is to apply  some [reusability](http://en.wikipedia.org/wiki/Reusability) concepts to "knowledge" that was usually fragmented and repeated over emails, wikis, blog posts. It's an attempt to give a cohesive view of disparate but, after all, interdependent aspects of distributed systems, and show how a concerted approach to systems at scale can work. Lastly it should serve as a way to connect the dots between the plethora of technologies involved in modern (distributed) computing and set a common language around them.
 
 **Community**
-The "concrete system" implementation is an Adobe community effort and follows [Adobe's Open Development Principles](https://wiki.corp.adobe.com/display/~bdelacre/Open+Development+Principles).   Discussions happen on public mailing lists, code is accessible in the internal Github repos and issues are tracked in the Adobe official JIRA.
+cell-os is an Adobe community effort and follows [Adobe's Open Development Principles](https://wiki.corp.adobe.com/display/~bdelacre/Open+Development+Principles).   Discussions happen on public mailing lists, code is accessible in the internal Github repos and issues are tracked in the Adobe official JIRA.
 
 While there's a planned roadmap, the dates are mere desires so if you need something that's not there or you need it earlier consider discussing it in the community and potentially contributing to it. What we'll try to do as a community is offer the "framework" in which such work happens in the best possible way for you and with the best possible outcome in terms of quality and time.
 
-**Developer mailing list**: DL-metal-cell-dev@adobe.com (alias metal-cell@adobe.com)  
-
-**Users mailing list**: DL-metal-cell-users@adobe.com  
 
 **Github**: https://git.corp.adobe.com/metal-cell/  
+
+**Developer mailing list**: 
+
+* [DL-metal-cell-dev@adobe.com](mailto:DL-metal-cell-dev@adobe.com) (alias metal-cell@adobe.com)  
+* archive: http://archive.corp.adobe.com/discussion-groups/content/lists/metal-cell-dev.html
+
+**Users mailing list**
+
+ * [DL-metal-cell-users@adobe.com](DL-metal-cell-users@adobe.com)
+ * archive http://archive.corp.adobe.com/discussion-groups/content/lists/metal-cell-users.html
 
 **JIRA**
 
 * https://issues.adobe.com/browse/CELL
-* https://issues.adobe.com/browse/HSTACK
 
 **Docs**: 
 * https://git.corp.adobe.com/pages/metal-cell/metal-cell/  
 * https://git.corp.adobe.com/metal-cell/metal-cell/wiki/
 
+**HipChat**: https://adobemc.hipchat.com/chat?focus_jid=66921_metal-cell@conf.hipchat.com
+
+
+Metal Cell uses and complies with **hstack** contribution guidelines:
+* https://git.corp.adobe.com/hstack
+* https://issues.adobe.com/browse/HSTACK
 
 Table of Contents
 =================
 
   * [Notes for the reader](#notes-for-the-reader)
+  * [Table of Contents](#table-of-contents)
   * [Abstract](#abstract)
-    * ["Exec Bullets"](#exec-bullets)
+    * [Goals](#goals)
   * [Motivation](#motivation)
     * [Time to Market](#time-to-market)
     * [Cost Efficiency](#cost-efficiency)
@@ -99,7 +112,7 @@ Table of Contents
     * [Datacenter Geography: Data Locality](#datacenter-geography-data-locality)
     * [Bridging Geography and Computational Complexity](#bridging-geography-and-computational-complexity)
     * [Managing State](#managing-state)
-  * [Implementation](#implementation)
+ * [](#implementation-cell-os)
     * [Infrastructure Level](#infrastructure-level)
       * [OS](#os)
       * [Clustering software](#clustering-software)
@@ -124,7 +137,6 @@ Table of Contents
   * [Existing Metal Cells](#existing-metal-cells)
   * [Deploying the Cell](#deploying-the-cell)
   * [Developing the Cell](#developing-the-cell)
-    * [Contact](#contact)
     * [HStack - Upstream OSS Projects Integration](#hstack---upstream-oss-projects-integration)
     * [Infrastructure](#infrastructure)
     * [DC Blueprint ](#dc-blueprint-)
@@ -133,49 +145,36 @@ Table of Contents
         * [Metal Cell 0.9.1 (currently in production, a.k.a. SaasBase - Deployment project)](#metal-cell-091-currently-in-production-aka-saasbase---deployment-project)
         * [Metal Cell 1.0 (resource isolation, service discovery, orchestration)](#metal-cell-10-resource-isolation-service-discovery-orchestration)
         * [Metal Cell 2.0 (XDC realtime workload migration, network flow control)](#metal-cell-20-xdc-realtime-workload-migration-network-flow-control)
-  * [Related](#related)
   * [Reference](#reference)
 
 
 Abstract
 =======
 
-Getting new products from whiteboards to paying customers often involves more effort for integration,  automation, performance and reliability testing, etc. than for the actual software development. 
+Getting new products from whiteboards to paying customers often involves more time and effort for integration,  automation, performance and reliability than for the actual software development. 
 
-Just the cost of reliability can exceed that of actual development. And, in spite of a large effort and the actual quality of the code, reliability expectations may still not be met. However, customers pay for functionality and expect reliability to be part of it.
+Compared to the "classic" LAMP stacks, today's systems are much more complex due to an ever increasing number of specialized technologies involved in everything from data storage to processing and packaging.
+With such a variety of (sometimes competing) technologies choices, it's not uncommon to have a unique infrastructure, software stack, processes and operations teams for each product. 
 
-The rate at which new "big data" technologies become available has increased in the last few years to a level where it seems that there's a new technology that promises to change everything comes up every week. Keeping track and making informed decisions can be daunting. 
-As an effect we witness a proliferation of software stacks and hardware configurations and, as a result, an increase in *system complexity*. 
-Thus, development and operations teams need to manage more complexity (sometimes more than they can handle). 
-This can lead to fragile infrastructure that further leads to fragile services and, eventually, unhappy customers.
-It gets further exacerbated by acquisitions which add to the overall complexity, while customers increase their expectations for smooth integrations across the products and expect the promised magic of "the cloud".
+The increased system complexity can have a negative impact on reliability. 
 
-At the same time, as the "cloud effect" has led to a "democratization of big data", we see an increased speed of innovation from small, agile startups in areas that were traditionally accessible to large enterprises only. 
-In contrast, large enterprises have a legacy of existing technology, products and customers that comes at a cost that reflects into time to market, overall cost and agility.
-
-Most times, however, it's just the product or the feature that differs in an overcomplicated process that may involve redundant infrastructure, processes etc.  
-Yet we still tend to solve the whole problem, again and again and end up with "deep monoliths" - products along their *unique* infrastructure, processes and teams to support them. Each product has it's own cluster, own technology stack, own team that manages up everything from the bottom infrastructure-level up to the application-level.
-
-Most of the above aspects could be part of a *reusable platform* but it's not immediately obvious how and it can be hard to solve in practice without having "the whole big picture" first. 
+However most products could make use of a *reusable platform*, however, it's not immediately obvious how and it can be hard to solve in practice without having "the whole big picture" first. 
 
 Metal Cell is that "big picture". 
 
 It got born from years of learning from years of experience with open-source productization, integration, development, and operation of distributed systems in conjunction with industry and research literature.
 One of the most influential papers has been the "The Datacenter as a Computer - An Introduction to the Design of Warehouse-Scale Machines" by Google's Luiz André Barroso and Urs Hölzle. 
 
-Metal Cell attempts to bring that in the reality of our own datacenters, the clouds and the existing and in progress open-source software.
-
-
-"Exec Bullets"
---------------------  
+Goals
+------
 * **Improved time to market** through accelerated development and self service provisioning of both infrastructure (IaaS) and cluster level services (PaaS)
 * **Reliability** through redundancy, high availability and linear scalability of every layer in the stack
-* **Cost efficiency** through consolidated infrastructure and resource sharing that could reduce the hardware footprint by 10x(.
+* **Efficiency** through consolidated infrastructure and resource sharing that could reduce the hardware footprint by 10x*
 
 
-The goal of Metal Cell is to improve products ***time to market*** and increase ***reliability *** and ***cost efficiency***.  It achieves this by applying a "disaggregation approach", to systems, breaking monolithic architectures into shared, self-service cluster-level services. (To some extent this can be compared to how operating systems abstract some of the hardware complexity and make common services available for the user-level software.)
+The goals of Metal Cell are to improve ***time to market*** and increase ***reliability *** and ***cost efficiency*** of software services.  It achieves this by applying a "disaggregation approach", to traditional systems, breaking monolithic architectures into shared, self-service, cluster-level services. (To some extent this can be compared to how operating systems abstract some of the hardware complexity and make common services available for the user-level software.)
 
-Thus, the ***cell***  becomes the "new box" and the software running on it acts like a loosely coupled "operating system". However, software that target the *cell* can take advantage of a much larger pool of resources (potentially spanning 10000s of nodes) as well as directly benefit from built-in resiliency to failures, traffic spikes, etc.
+Thus, the ***cell***  becomes the "new server box" and the software running on it acts like a loosely coupled "operating system". However, software that target the *cell* can take advantage of a much larger pool of resources (potentially spanning 10000s of nodes) as well as directly benefit from built-in resiliency to failures, traffic spikes, etc.
 
 The Cell "OS" is made of highly available distributed services that provide:
 
@@ -188,17 +187,18 @@ The Cell "OS" is made of highly available distributed services that provide:
 Concretely, the Metal Cell *software stack* integrates and builds on top of well known, open-source software such as Hadoop, Spark, Mesos, Docker, HBase, Zookeeper, etc. and exposes it as readily-available, integrated services that development teams could use as self-service, shared resources across data centers and clouds.
 
 **Mechanical Sympathy**
-We can only abstract, but not make go away, things like speed of light, latency, bandwidth, etc. For this reason we should not hide them underneath [APIs that are supposed to make them look like running on a single machine](http://writings.quilt.org/2014/05/12/distributed-systems-and-the-end-of-the-api/).
-Rather than oversimplifying and hiding the complexities of distributed systems, Metal Cell, instead, distills them. While solving some of the common problems of distributed systems (storage, compute, scheduling, etc.), it abstracts, but not hide, their complexities and keeps them transparent to developers, so that applications can be written in a responsible manner in relation to them. 
+We can only abstract, but not make go away, things like speed of light, latency, bandwidth, etc. For this reason we should try not hide them underneath [APIs that are supposed to make them look like running on a single machine](http://writings.quilt.org/2014/05/12/distributed-systems-and-the-end-of-the-api/).
+Rather than oversimplifying and hiding the complexities of distributed systems, Metal Cell, instead, distills them. While solving some of the common problems of distributed systems (storage, compute, scheduling, etc.) in abstracts them, but at the same time keeps them transparent to developers, so that applications can be written in a responsible manner in relation to them. 
 
 Motivation
 =========
 
 Time to Market
 ------------------
+
 Reduce new applications turnaround time from months to days enabling continuous delivery.
 
-Current practices involve teams that code, deploy and operate full stacks. With the proliferation of distributed systems, these stacks may involve more than 10 different services, making development and operations complex. Many times more time ends up being spent in setting up and maintaining development environments - integration with all components, dealing with versions conflicts, etc. than on the sellable product. 
+Current practices involve teams that code, deploy and operate full stacks. With the proliferation of distributed systems, these stacks may involve many different services, making development and operations complex. Many times more time ends up being spent in setting up and maintaining development environments - integration with all components, dealing with versions conflicts, etc. than on the sellable product. 
 	
 *Note: More, when releasing these systems to production, there's an assumption that these could be simply "handed over" to operations teams. However, in reality the "hand-over" process can be a long and sometimes impossible to happen as expected.
 
@@ -219,6 +219,7 @@ We decouple hardware provisioning and product delivery, essentially removing the
 
 Cost Efficiency
 -----------------
+
 Benefits from economy of scale should allow us to reduce our hardware footprint by 10x and decrease operational overhead substantially.
 
 The infrastructure load in typical datacenters (as in Adobe's) is between 1% and 10% (normally skewed towards 1%).
@@ -244,6 +245,7 @@ By sharing infrastructure between workloads we could achieve a much higher compu
 
 Reliability 
 ------------
+
 (Chapter in progress)
 
 Technical
@@ -430,28 +432,28 @@ At the infrastructure (or device) level, the main resources we're concerned with
 
 ### Resource Utilization 
 
-Average resource utilization in industry is < 10% and skewed towards 1%
+Average resource utilization in industry is < 10% and skewed towards 1%.
 
-![Low utilization across a single workload](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-low.png)
+![Low utilization across a single workload](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/utilization-low.png)
 
 There are multiple reasons for this, including the type of workloads, over-provisioning for peak load, etc. However a lot of this can be attributed to monolithic architectures.
 
-Across an organization an aggregation of loads across different infrastructures from different products may look like this:
+Across an organization an aggregation of loads across different infrastructures from different products will generally result in a huge amount of "spare capacity". 
 
-![Low utilization across an organization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-across.png)
+![Low utilization across](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/utilization-across.png)
 
 In contrast the resource utilization in Metal Cell can be much higher:
 
-![Metal Cell Utilization](https://git.corp.adobe.com/metal-cell/metal-cell/blob/gh-pages/img/utilization-metal-cell.png)
+![Metal Cell Utilization](https://git.corp.adobe.com/metal-cell/metal-cell/raw/gh-pages/img/utilization-metal-cell.png)
 
 (incomplete)
 
 This is achieved by
 
-* granular resource units
+* granular resource units 
 * granular resource isolation
 * realtime cluster scheduling
-* mechanical sympathy
+* "mechanical sympathy"
 
 ####Workload types
 **Organic growth and Daily, Weekly, Seasonal Load Variation**
@@ -463,6 +465,8 @@ As we need to
 
 
 ### Resource Oversubscription 
+
+*Resource oversubscription* involves an allocation to multiple workloads of which sum of their peak loads exceed the total capacity. 
 
 Economy of scale, resource utilization, resource sharing, etc.   
 
@@ -684,8 +688,8 @@ Managing State
 ----------------------
 TBD
 
-Implementation
-=============
+Implementation: **cell-os**
+===================
 
 Given the speed at which open-source evolves, relying on proprietary technology (in-house or 3rd party) is risky.
 For this reason Metal Cell's goal is to leverage open-source technology* as much as possible.
@@ -832,6 +836,8 @@ While we think the overall Metal Cell architecture won't change significantly we
 Developing for the Cell
 ===================
 
+For a hands-on guide on how to get started with Metal Cell take a look at [Wiki: Working with Metal Cell Services](https://git.corp.adobe.com/metal-cell/metal-cell/wiki/Working-with-Metal-Cell-services)
+
 Any software can run on the Metal Cell, including legacy software.
 This being said, software that targets Metal Cell will be faster to write in a highly available, performant manner.
 
@@ -957,7 +963,6 @@ SIN1-H1 available 6400/7200 cores,  37TB/37TB RAM
 
 
 
-
 Existing Metal Cells
 ================
 Development Cells:
@@ -975,13 +980,6 @@ Developing the Cell
 
 Metal Cell is part of [Adobe Open Development Initiative](https://wiki.corp.adobe.com/display/opendev/Home), hence developed in an Adobe internal open-source manner. 
 This being said, Metal Cell si more about integrating existing open-source projects and having them available as readily available services in our data centers. 
-
-##Contact
-Git: https://git.corp.adobe.com/metal-cell/metal-cell  
-Users: DL-metal-cell-users <metal-cell-users@adobe.com>  
-Developers: DL-MetaSky-Client-Dev <MetaSky-Client-Dev@adobe.com> (alias metal-cell@adobe.com)  
-JIRA: 
-Hipchat: https://adobemc.hipchat.com/rooms/show/618702/metalcell  
 
 There are several aspects of Metal Cell development:
 
@@ -1029,25 +1027,15 @@ Roadmap
 
 #### Metal Cell 2.0 (XDC realtime workload migration, network flow control)
 
-Related
-======
-* OpenStack
-* VPC
-* Popcorn
-
-
-
-
-
 
 Reference
 ========
 * [The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines](http://www.morganclaypool.com/doi/abs/10.2200/S00516ED2V01Y201306CAC024)  
 * [Omega: flexible, scalable schedulers for large compute clusters](http://research.google.com/pubs/pub41684.html)
+* [http://research.google.com/pubs/pub43438.html](http://research.google.com/pubs/pub43438.html)
 * [Mesos: A Platform for Fine-Grained Resource Sharing in the Data Center](https://www.cs.berkeley.edu/~alig/papers/mesos.pdf)
 
 * [Platform Ecosystem Problem Statement](https://wiki.corp.adobe.com/display/omtrcache/The+Platform+Ecosystem)  
 * [The future of the infrastructure is metal (cells) - Slides](https://www.dropbox.com/s/cw5a6bw9c7hhtvh/The%20Future%20of%20Platform%20is%20Metal%20%28cells%29.pptx)  
 * [The future of the infrastructure is metal (cells) - Video Analytics Mini-Summit Recording](https://my.adobeconnect.com/p3wea44zvb0/) @~ 00:21:40  
-* [Github Markdowni TOC gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
