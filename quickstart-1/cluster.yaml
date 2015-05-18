@@ -33,7 +33,7 @@ etcd::version: v2.0.5
 etcd::registry: "quay.io/coreos/etcd"
 etcd::peers: ["%{ipaddress_eth0}"]
 
-mesos::version: "0.22.0-1.2.centos701406"
+mesos::version: "0.22.1-1.0.centos701406"
 mesos::zookeeper: "zk://localhost:2181/mesos"
 mesos::quorum: 1
 
