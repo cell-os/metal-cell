@@ -50,7 +50,7 @@ While there's a planned roadmap, the dates are mere desires so if you need somet
 * https://git.corp.adobe.com/pages/metal-cell/metal-cell/  
 * https://git.corp.adobe.com/metal-cell/metal-cell/wiki/
 
-**HipChat**: https://adobemc.hipchat.com/chat?focus_jid=66921_metal-cell@conf.hipchat.com
+**Slack**: https://adobe.slack.com/messages/metal-cell/
 
 
 Metal Cell uses and complies with **hstack** contribution guidelines:
