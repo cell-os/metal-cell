@@ -3,7 +3,6 @@ Subtitle:    Adobe's Mechanically Sympathetic Datacenter as a Computer
 Project:     Metal Cell  
 Author:      Cosmin Lehene  
 Affiliation: Adobe  
-Web:          httt://metal.corp.adobe.com  
 Date:         June 2, 2014  
 Updated:   Feb 3, 2015
 
