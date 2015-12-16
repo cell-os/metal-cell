@@ -1,0 +1,9 @@
+#!/bin/bash
+# Enables access to lambda for a IAM role
+principal=$1
+aws --debug --region us-east-1 lambda add-permission   \
+   --function-name "arn:aws:lambda:us-east-1:482993447592:function:register-gateway-set" \
+   --statement-id "stmt-lambda-Id-450000006" \
+   --action "lambda:InvokeFunction"  \
+   --principal "${principal}"
+   --principal ""
