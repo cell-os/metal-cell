@@ -726,6 +726,7 @@ As many of the cluster level services that we're running are not (yet) container
 **Resouce Management**
 * [Mesos](http://mesos.apache.org/)
 * [YARN](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html)
+* [Kubernetes](http://kubernetes.io/) (mixes resource management and scheduling and service discovery)
 
 Note that Mesos and YARN have similar goals. While YARN comes from the Hadoop world and is backed by the Hadoop community along with companies such as Hortonworks and Cloudera.
 Mesos comes from an academic environment, namely Berkleys' AMPLab which Adobe is also a member of and bears higher similarity with systems present in Google.
@@ -786,15 +787,16 @@ It's likely that we'll test both and choose or potentially use both if that make
 
 #### Distributed RPC 
 TBD - see Standard Service Contract
+* [GRPC](grpc.io) 
 * [Thrift](https://thrift.apache.org/)
-* 
+* etc. (too many to list)
 
 ### Supporting technologies
 
 
 **Containers**:
 Docker 
-Kubernetes 
+
 CAdvisor
 libswarm
 libcontainer
